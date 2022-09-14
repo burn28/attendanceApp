@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:contentPaddingLeft="15dp"
+    app:contentPaddingRight="15dp"
+    app:contentPaddingTop="5dp"
+    app:contentPaddingBottom="5dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="5dp"
+    android:layout_marginBottom="5dp"
+    app:cardBackgroundColor="@color/blue"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardview">
+
+    <LinearLayout
+        android:id="@+id/classLinear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+        android:id="@+id/classTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:text="ID and Title subject"/>
+
+    <TextView
+        android:id="@+id/classDay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:text="Day"/>
+
+    <TextView
+        android:id="@+id/classTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:text="TIme"/>
+
+    <TextView
+        android:id="@+id/classLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:text="Location"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">fyp3</string>
+    <string name="back4app_server_url">https://parseapi.back4app.com/</string>
+
+    <!-- Change BOTH strings as required -->
+    <string name="back4app_app_id">YxAhfuXmA6GRhiFnLtaRVqZ2YJ6OgVnJDBYBt8HE</string>
+    <string name="back4app_client_key">l7fRSiFISrGmKnwOvDj2D1kCNEtgCXbkZIJY2AmO</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
