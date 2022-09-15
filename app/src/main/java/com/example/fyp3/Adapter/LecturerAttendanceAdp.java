@@ -51,6 +51,7 @@ public class LecturerAttendanceAdp extends RecyclerView.Adapter<LecturerAttendan
 //            view.setBackground(backgroundOff);
             holder.cardView.setCardBackgroundColor(mContext.getResources().getColor(R.color.green));
         }
+
     }
 
     @Override
