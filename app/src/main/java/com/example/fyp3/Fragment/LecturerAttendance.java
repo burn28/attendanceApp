@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.fyp3.Adapter.LecturerAttendanceAdp;
+import com.example.fyp3.Adapter.PercentageAdp;
 import com.example.fyp3.Model.AttendanceClass;
 import com.example.fyp3.R;
 import com.parse.FindCallback;
@@ -35,22 +36,27 @@ public class LecturerAttendance extends Fragment {
 
     public String week = "";
     public String[] weeks = {"1","2","3","4","5","6","7",
-            "8","9","10","11","12","13","14","percentage"};
+            "8","9","10","11","12","13","14","Overall Percentage"};
     public AutoCompleteTextView autoCompleteTextView;
     ArrayAdapter<String> arrayAdapter;
 
     private RecyclerView recyclerView;
     private com.example.fyp3.Adapter.LecturerAttendanceAdp attendanceAdp;
+    private com.example.fyp3.Adapter.PercentageAdp percentageAdp;
     public List<AttendanceClass> attendanceList;
     public List<AttendanceClass> absentList;
     public List<AttendanceClass> presentList;
     public List<AttendanceClass> displayList;
     public List<AttendanceClass> bufferList;
     public List<AttendanceClass> percentList;
+    public List<AttendanceClass> FirstList;
+    public List<AttendanceClass> SecList;
+    public List<AttendanceClass> ThirdList;
     RecyclerView.LayoutManager linearLayoutManager;
 
     private TextView title;
     private RadioGroup radioGroup;
+    private RadioGroup radioGroup2;
 
 
 
@@ -73,7 +79,17 @@ public class LecturerAttendance extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 week = adapterView.getItemAtPosition(i).toString();
-                showList2("default");
+                if(week.equals("Overall Percentage")){
+                    radioGroup.setVisibility(View.GONE);
+                    radioGroup2.setVisibility(View.VISIBLE);
+                    showList2("percentage");
+                }else{
+                    radioGroup.setVisibility(View.VISIBLE);
+                    radioGroup2.setVisibility(View.GONE);
+                    showList2("default");
+                }
+
+
 
             }
         });
@@ -89,6 +105,9 @@ public class LecturerAttendance extends Fragment {
 
         bufferList = new ArrayList<>();
         percentList = new ArrayList<>();
+        FirstList = new ArrayList<>();
+        SecList = new ArrayList<>();
+        ThirdList = new ArrayList<>();
 
 
         radioGroup = view.findViewById(R.id.radioGroup);
@@ -104,6 +123,23 @@ public class LecturerAttendance extends Fragment {
                         break;
                     case R.id.optionAbsent:
                         showList2("absent");
+                        break;
+                }
+            }
+        });
+        radioGroup2 = view.findViewById(R.id.radioGroup2);
+        radioGroup2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                switch (i){
+                    case R.id.opt100:
+                        percentOpt("firstOpt");
+                        break;
+                    case R.id.opt86:
+                        percentOpt("secOpt");
+                        break;
+                    case R.id.opt0:
+                        percentOpt("thirdOpt");
                         break;
                 }
             }
@@ -163,10 +199,36 @@ public class LecturerAttendance extends Fragment {
 
     }
 
+    private void percentOpt(String opt){
+        FirstList.clear();
+        SecList.clear();
+        ThirdList.clear();
+        for(AttendanceClass obj:bufferList){
+            if(obj.getPercentage() == 100){
+                FirstList.add(obj);
+            }else if(obj.getPercentage()<100 && obj.getPercentage()>85){
+                SecList.add(obj);
+            }else{
+                ThirdList.add(obj);
+            }
+        }
+        if(opt.equals("firstOpt")){
+            displayList = new ArrayList<>(FirstList);
+        }else if(opt.equals("secOpt")){
+            displayList = new ArrayList<>(SecList);
+        }else{
+            displayList = new ArrayList<>(ThirdList);
+        }
+        percentageAdp = new PercentageAdp(getContext(), displayList);
+        recyclerView.setAdapter(percentageAdp);
+        percentageAdp.notifyDataSetChanged();
+
+    }
+
     private void showList2(String option) {
         SharedPreferences preferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         String courseId = preferences.getString("courseId", "");
-        if(option.equals("default") && !week.equals("percentage")) {
+        if(option.equals("default") && !week.equals("Overall Percentage")) {
 //            absentList = new ArrayList<>();
             ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
             query.whereEqualTo("week", week);
@@ -226,6 +288,73 @@ public class LecturerAttendance extends Fragment {
                 }
             });
             radioGroup.check(R.id.optionAll);
+        }else if(week.equals("Overall Percentage")){
+//            Toast.makeText(getContext(), "RUNNING", Toast.LENGTH_SHORT).show();
+            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
+            query.orderByAscending("studentId");
+            query.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> objects, ParseException e) {
+                    if (e == null && !objects.isEmpty()) {
+                        percentList.clear();
+                        int i = 0;
+                        for(ParseObject obj:objects){
+                            AttendanceClass lClass = new AttendanceClass();
+                            lClass.setStudentId(obj.getString("studentId"));
+                            lClass.setTotalWeek(1);
+                            if(percentList.isEmpty()){
+                                percentList.add(lClass);
+                            }
+                            else if(!lClass.getStudentId().equals(percentList.get(i).getStudentId())){
+                                percentList.add(lClass);
+//                                Toast.makeText(getContext(), bufferList.get(i).getStudentId(), Toast.LENGTH_SHORT).show();
+                                i++;
+                            }else{
+                                percentList.get(i).setTotalWeek(percentList.get(i).getTotalWeek()+1);
+                            }
+                        }
+                        for(AttendanceClass obj:percentList){
+                            double percentage = (14d-obj.getTotalWeek())*100/14;
+                            int result = (int)Math.ceil(percentage);
+                            obj.setPercentage(result);
+                        }
+                        ParseQuery<ParseObject> query1 = ParseQuery.getQuery("ISA15");
+                        query1.orderByAscending("studentId");
+                        query1.findInBackground(new FindCallback<ParseObject>() {
+                            @Override
+                            public void done(List<ParseObject> objects, ParseException e) {
+                                if(e == null && !objects.isEmpty()){
+                                    bufferList.clear();
+                                    for(ParseObject obj:objects){
+                                        AttendanceClass student = new AttendanceClass();
+                                        student.setStudentId(obj.getString("studentId"));
+                                        student.setStudentName(obj.getString("fullname"));
+                                        for(AttendanceClass percent:percentList){
+                                            if(student.getStudentId().equals(percent.getStudentId())){
+                                                student.setPercentage(percent.getPercentage());
+                                                student.setTotalWeek(percent.getTotalWeek());
+                                                break;
+                                            }
+                                        }
+                                        bufferList.add(student);
+                                    }
+                                    percentOpt("firstOpt");
+//                                    Toast.makeText(getContext(), "ELOK JE", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }else {
+                        Log.d("PERCENTAGE", "Error: " + e.getMessage());
+                    }
+
+                }
+            });
+//            displayList = new ArrayList<>(bufferList);
+//            percentageAdp = new PercentageAdp(getContext(), displayList);
+//            recyclerView.setAdapter(percentageAdp);
+//            percentageAdp.notifyDataSetChanged();
+            radioGroup2.check(R.id.opt100);
+
         }else if(option.equals("all")){
             displayList = new ArrayList<>(attendanceList);
             attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
@@ -242,61 +371,6 @@ public class LecturerAttendance extends Fragment {
             attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
             recyclerView.setAdapter(attendanceAdp);
             attendanceAdp.notifyDataSetChanged();
-        }else if(week.equals("percentage")){
-//            percentList.clear();
-            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
-            query.orderByAscending("studentId");
-            query.findInBackground(new FindCallback<ParseObject>() {
-                @Override
-                public void done(List<ParseObject> objects, ParseException e) {
-                    if (e == null && !objects.isEmpty()) {
-                        int i = 0;
-                        for(ParseObject obj:objects){
-                            AttendanceClass lClass = new AttendanceClass();
-                            lClass.setStudentId(obj.getString("studentId"));
-                            lClass.setTotalWeek(1);
-//                            if(!bufferList.isEmpty()){
-//                                for(AttendanceClass student:bufferList){
-//                                    if(!lClass.getStudentId().equals(student.getStudentId())){
-//
-//                                    }else{
-//                                        lClass.setTotalWeek(student.getTotalWeek()+1);
-//                                        percentList.add(lClass);
-//                                        break;
-//                                    }
-//                                }
-//                                bufferList.add(lClass);
-//                            }else{
-//                                bufferList.add(lClass);
-//                            }
-                            if(percentList.isEmpty()){
-                                percentList.add(lClass);
-                            }
-                            else if(!lClass.getStudentId().equals(percentList.get(i).getStudentId())){
-                                percentList.add(lClass);
-//                                Toast.makeText(getContext(), bufferList.get(i).getStudentId(), Toast.LENGTH_SHORT).show();
-                                i++;
-                            }else{
-                                percentList.get(i).setTotalWeek(percentList.get(i).getTotalWeek()+1);
-                            }
-//                            bufferList.add(lClass);
-                        }
-                    }else {
-                        Log.d("PERCENTAGE", "Error: " + e.getMessage());
-                    }
-
-                }
-            });
-            for(AttendanceClass obj:percentList){
-                Toast.makeText(getContext(), obj.getStudentId()+" total week "+ obj.getTotalWeek(), Toast.LENGTH_SHORT).show();
-            }
-//            SharedPreferences.Editor editor = getContext().getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
-//            editor.putString("layout","percentage");
-//            editor.commit();
-//            attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
-//            recyclerView.setAdapter(attendanceAdp);
-//            attendanceAdp.notifyDataSetChanged();
-
         }
 
 

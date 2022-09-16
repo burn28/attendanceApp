@@ -69,6 +69,7 @@
 
 
     <RadioGroup
+        android:visibility="visible"
         android:id="@+id/radioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -99,6 +100,41 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="Absent" />
+
+    </RadioGroup>
+
+    <RadioGroup
+        android:visibility="gone"
+        android:id="@+id/radioGroup2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editText">
+
+        <RadioButton
+            android:id="@+id/opt100"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100%" />
+
+        <RadioButton
+            android:id="@+id/opt86"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:text="99% - 86%" />
+
+        <RadioButton
+            android:id="@+id/opt0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:text="85% - 0%" />
 
     </RadioGroup>
 

@@ -11,7 +11,7 @@ public class AttendanceClass {
     private String status;
     private ArrayList<String> week;
     private Integer totalWeek = 0;
-    private Integer percentage;
+    private Integer percentage = 100;
 
 
     public String getCourseId() {
