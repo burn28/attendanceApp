@@ -1,21 +1,27 @@
 package com.example.fyp3.Model;
 
+import java.util.ArrayList;
+
 public class StudentClass {
 
     private String courseId;
     private String title;
-    private String studentId;
+    //    private String studentId;
     private String week;
-    private String status;
+    //    private String status;
+    private ArrayList<String> weeks = new ArrayList<>();
+    private Integer totalWeek = 0;
+    private Integer percentage = 100;
 
-    public StudentClass(String courseId, String studentId, String week, String status) {
+    public StudentClass(String courseId, String week, String title, Integer totalWeek, Integer percentage) {
         this.courseId = courseId;
-        this.studentId = studentId;
         this.week = week;
-        this.status = status;
+        this.title = title;
+        this.totalWeek = totalWeek;
+        this.percentage = percentage;
     }
 
-    public StudentClass(){
+    public StudentClass() {
 
     }
 
@@ -35,14 +41,6 @@ public class StudentClass {
         this.title = title;
     }
 
-    public String getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
-
     public String getWeek() {
         return week;
     }
@@ -51,11 +49,27 @@ public class StudentClass {
         this.week = week;
     }
 
-    public String getStatus() {
-        return status;
+    public ArrayList<String> getWeeks() {
+        return weeks;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setWeeks(String week) {
+        this.weeks.add(week);
+    }
+
+    public Integer getTotalWeek() {
+        return totalWeek;
+    }
+
+    public void setTotalWeek(Integer totalWeek) {
+        this.totalWeek = totalWeek;
+    }
+
+    public Integer getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(Integer percentage) {
+        this.percentage = percentage;
     }
 }

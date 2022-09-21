@@ -40,6 +40,7 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
     public void onBindViewHolder(@NonNull StudentClassAdp.ViewHolder holder, int position) {
         StudentClass Class = mCourseList.get(position);
         holder.title.setText(Class.getCourseId()+" "+Class.getTitle());
+        holder.percent.setText(Class.getPercentage() + "%");
 //        holder.linearLayout.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {

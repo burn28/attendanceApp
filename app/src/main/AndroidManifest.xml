@@ -14,13 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fyp3">
         <activity
-            android:name=".StudentHome"
-            android:exported="false" />
-        <activity
             android:name=".StudentActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LecturerAttendance"
             android:exported="false" />
         <activity
             android:name=".LecturerActivity"

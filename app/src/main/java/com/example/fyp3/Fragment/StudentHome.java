@@ -58,29 +58,56 @@ public class StudentHome extends Fragment {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
-                if(e == null){
+                if (e == null) {
                     courseList.clear();
-                    for(ParseObject object:objects){
+                    for (ParseObject object : objects) {
                         StudentClass studentCourse = new StudentClass();
                         studentCourse.setCourseId(object.getString("courseId"));
+                        courseList.add(studentCourse);
+                    }
+                    for (StudentClass course : courseList) {
                         ParseQuery<ParseObject> query2 = ParseQuery.getQuery("course");
-                        query2.whereEqualTo("courseId",studentCourse.getCourseId());
-                        query2.getFirstInBackground(new GetCallback<ParseObject>() {
+                        query2.whereEqualTo("courseId", course.getCourseId());
+                        query2.findInBackground(new FindCallback<ParseObject>() {
                             @Override
-                            public void done(ParseObject object, ParseException e) {
-                                if(e == null){
-                                    studentCourse.setTitle(object.getString("title"));
-                                    courseList.add(studentCourse);
+                            public void done(List<ParseObject> objects, ParseException e) {
+                                if (e == null) {
+                                    for (ParseObject obj : objects) {
+                                        course.setTitle(obj.getString("title"));
+                                    }
                                     courseAdp.notifyDataSetChanged();
-                                }else {
+                                } else {
                                     Log.d("INNER", "Error: " + e.getMessage());
                                 }
                             }
                         });
+                    }
+                    for (StudentClass course : courseList) {
+                        ParseQuery<ParseObject> query3 = ParseQuery.getQuery(course.getCourseId());
+                        query3.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
+                        query3.findInBackground(new FindCallback<ParseObject>() {
+                            @Override
+                            public void done(List<ParseObject> objects, ParseException e) {
+                                if (e == null) {
+                                    if (!objects.isEmpty()) {
+                                        for (ParseObject obj : objects) {
+                                            course.setWeeks(obj.getString("week"));
+                                            course.setTotalWeek(course.getTotalWeek() + 1);
+                                        }
+                                        double percentage = (14d - course.getTotalWeek()) * 100 / 14;
+                                        int result = (int) Math.ceil(percentage);
+                                        course.setPercentage(result);
+                                    }
 
+                                    courseAdp.notifyDataSetChanged();
+                                } else {
+                                    Log.d("QUERY3", "Error: " + e.getMessage());
+                                }
+                            }
+                        });
                     }
 
-                }else {
+                } else {
                     Log.d("OUTER", "Error: " + e.getMessage());
                 }
 

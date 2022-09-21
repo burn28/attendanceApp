@@ -19,7 +19,6 @@ public class LecturerActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, new LecturerHome())
-                .addToBackStack("LecturerHome")
                 .commit();
     }
 

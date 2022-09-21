@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.parse.Parse;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
@@ -27,6 +28,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        Parse.initialize(new Parse.Configuration.Builder(this)
+//                        .applicationId(getString(R.string.back4app_app_id))
+//                        // if defined
+//                        .clientKey(getString(R.string.back4app_client_key))
+//                        .server(getString(R.string.back4app_server_url))
+//                        .build());
+
         ParseUser.logOut();
 
 
@@ -38,11 +46,12 @@ public class MainActivity extends AppCompatActivity {
         signIn = findViewById(R.id.signinBtn);
         register = findViewById(R.id.registerBtn);
 
+
         student.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 student.setBackgroundColor(Color.CYAN);
-                lecturer.setBackgroundColor(Color.parseColor("#FF6200EE"));
+                lecturer.setBackgroundColor(Color.parseColor("#4378DB"));
                 role = "student";
                 selected_role = true;
             }
@@ -51,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 lecturer.setBackgroundColor(Color.CYAN);
-                student.setBackgroundColor(Color.parseColor("#FF6200EE"));
+                student.setBackgroundColor(Color.parseColor("#4378DB"));
                 role = "lecturer";
                 selected_role = true;
             }
@@ -75,28 +84,33 @@ public class MainActivity extends AppCompatActivity {
     public void Login(){
         id = idInput.getText().toString();
         password = passwordInput.getText().toString();
-        if(selected_role){
-            ParseUser.logInInBackground(id, password, new LogInCallback() {
-                public void done(ParseUser user, ParseException e) {
-                    if (user != null) {
-                        if(user.get("role").equals(role)){
-                            if(role.equals("lecturer")){
-                                startActivity(new Intent(MainActivity.this, LecturerActivity.class));
-                            }else{
-                                startActivity(new Intent(MainActivity.this, StudentActivity.class));
-                            }
-                        }else {
-                            Toast.makeText(MainActivity.this, "Select the correct role!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "Login Failed!: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+        if(id.isEmpty()||password.isEmpty()){
+            Toast.makeText(this, "Fill all the field!", Toast.LENGTH_SHORT).show();
         }else {
-            Toast.makeText(MainActivity.this, "Please select your role", Toast.LENGTH_SHORT).show();
+            if (selected_role) {
+                ParseUser.logInInBackground(id, password, new LogInCallback() {
+                    public void done(ParseUser user, ParseException e) {
+                        Toast.makeText(MainActivity.this, "Please wait", Toast.LENGTH_SHORT).show();
+                        if (user != null) {
+                            if (user.get("role").equals(role)) {
+                                if (role.equals("lecturer")) {
+                                    startActivity(new Intent(MainActivity.this, LecturerActivity.class));
+                                } else {
+                                    startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                                }
+                            } else {
+                                Toast.makeText(MainActivity.this, "Select the correct role!", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            ParseUser.logOut();
+                            Toast.makeText(MainActivity.this, "Login Failed!: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(MainActivity.this, "Please select your role", Toast.LENGTH_SHORT).show();
+            }
         }
-
     }
 
 }
