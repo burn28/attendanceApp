@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.fyp3.Fragment.LecturerHome;
+import com.example.fyp3.Fragment.StudentAttendance;
 import com.example.fyp3.Fragment.StudentHome;
 import com.google.android.material.navigation.NavigationView;
 
@@ -40,6 +41,7 @@ public class StudentActivity extends AppCompatActivity {
         toggle.syncState();
 
         navigationView = findViewById(R.id.navigation);
+        navigationView.getMenu().findItem(R.id.home).setChecked(true);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -49,9 +51,11 @@ public class StudentActivity extends AppCompatActivity {
                 {
                     case R.id.home:
                         Toast.makeText(StudentActivity.this, "Home Fragment", Toast.LENGTH_SHORT).show();
+                        replaceFragment(new StudentHome());
                         break;
                     case R.id.attendance:
                         Toast.makeText(StudentActivity.this, "Attendance Fragment", Toast.LENGTH_SHORT).show();
+                        replaceFragment(new StudentAttendance());
                         break;
                     case R.id.table:
                         Toast.makeText(StudentActivity.this, "Table Fragment", Toast.LENGTH_SHORT).show();

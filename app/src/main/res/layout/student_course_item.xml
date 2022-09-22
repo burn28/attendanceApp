@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:contentPadding="10dp"
+    app:contentPadding="15dp"
     app:cardCornerRadius="20dp"
     app:cardElevation="5dp"
-    android:layout_marginBottom="5dp"
+    android:layout_marginBottom="10dp"
     app:cardBackgroundColor="@color/blue"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -30,10 +31,18 @@
             android:id="@+id/percent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:textSize="20dp"
             android:textColor="@color/white"
-            android:text="Day"/>
+            android:text="percent"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="7dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:progressDrawable="@drawable/custom_progress_bar"/>
 
     </LinearLayout>
 
