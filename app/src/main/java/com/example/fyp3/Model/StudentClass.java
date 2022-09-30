@@ -8,16 +8,18 @@ public class StudentClass {
     private String title;
     //    private String studentId;
     private String week;
+    private String day;
     //    private String status;
     private ArrayList<String> weeks = new ArrayList<>();
     private Integer totalWeek = 0;
     private Integer percentage = 100;
 
-    public StudentClass(String courseId, String week, String title, Integer totalWeek, Integer percentage) {
+    public StudentClass(String courseId, String week, String title, Integer totalWeek, Integer percentage, String day) {
         this.courseId = courseId;
         this.week = week;
         this.title = title;
         this.totalWeek = totalWeek;
+        this.day = day;
         this.percentage = percentage;
     }
 
@@ -71,5 +73,13 @@ public class StudentClass {
 
     public void setPercentage(Integer percentage) {
         this.percentage = percentage;
+    }
+
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
     }
 }
