@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +58,8 @@ public class LecturerAttendance extends Fragment {
     private TextView title;
     private RadioGroup radioGroup;
     private RadioGroup radioGroup2;
+    private TextView none;
+    String currentWeek;
 
 
     @Override
@@ -70,9 +73,14 @@ public class LecturerAttendance extends Fragment {
         SharedPreferences preferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         title.setText(preferences.getString("title", ""));
 
+        SharedPreferences pref = getActivity().getSharedPreferences("DATE", Context.MODE_PRIVATE);
+        currentWeek = pref.getString("week", "1");
+
         autoCompleteTextView = view.findViewById(R.id.autoComplete);
         arrayAdapter = new ArrayAdapter<>(getContext(), R.layout.week_list, weeks);
         autoCompleteTextView.setAdapter(arrayAdapter);
+
+        none = view.findViewById(R.id.none);
 
         autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -149,149 +157,159 @@ public class LecturerAttendance extends Fragment {
     }
 
     private void showList(String option) {
-        SharedPreferences preferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-        String courseId = preferences.getString("courseId", "");
-        if (option.equals("default") && !week.equals("Overall Percentage")) {
-            ParseQuery<ParseObject> query1 = ParseQuery.getQuery("ISA15");
-            query1.orderByAscending("studentId");
-            query1.findInBackground(new FindCallback<ParseObject>() {
-                @Override
-                public void done(List<ParseObject> objects, ParseException e) {
-                    if (e == null && !objects.isEmpty()) {
-                        attendanceList.clear();
-                        presentList.clear();
-                        for (ParseObject object : objects) {
-                            AttendanceClass lClass = new AttendanceClass();
-                            lClass.setStudentId(object.getString("studentId"));
-                            lClass.setStudentName(object.getString("fullname"));
-                            lClass.setStatus("present");
-                            attendanceList.add(lClass);
-                        }
-                        ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
-                        query.whereEqualTo("week", week);
-                        query.findInBackground(new FindCallback<ParseObject>() {
-                            public void done(List<ParseObject> objects, ParseException e) {
-                                if (e == null && !objects.isEmpty()) {
-                                    absentList.clear();
-                                    for (ParseObject object : objects) {
-                                        AttendanceClass lClass = new AttendanceClass();
-                                        lClass.setStudentId(object.getString("studentId"));
-                                        lClass.setStatus("absent");
-                                        absentList.add(lClass);
-                                    }
-                                    for (AttendanceClass obj : attendanceList) {
-                                        for (AttendanceClass obj2 : absentList) {
-                                            if (obj.getStudentId().equals(obj2.getStudentId())) {
-                                                obj2.setStudentName(obj.getStudentName());
-                                                obj.setStatus("absent");
-                                                break;
-                                            } else {
-                                                obj.setStatus("present");
-                                            }
-                                        }
-                                        if(obj.getStatus().equals("present")){
-                                            presentList.add(obj);
-                                        }
-                                        attendanceAdp.notifyDataSetChanged();
-                                    }
-                                } else if (objects.isEmpty()) {
-                                    presentList.addAll(attendanceList);
-                                } else {
-                                    Log.d("EMPTY", "Error: " + e.getMessage());
-                                }
-                            }
-                        });
-                        displayList = new ArrayList<>(attendanceList);
-                        attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
-                        recyclerView.setAdapter(attendanceAdp);
-                        attendanceAdp.notifyDataSetChanged();
-                    } else {
-                        Log.d("EMPTY", "Error: " + e.getMessage());
-                    }
-                }
-            });
-            radioGroup.check(R.id.optionAll);
-        }else if (week.equals("Overall Percentage")) {
-//            Toast.makeText(getContext(), "RUNNING", Toast.LENGTH_SHORT).show();
-            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
-            query.orderByAscending("studentId");
-            query.findInBackground(new FindCallback<ParseObject>() {
-                @Override
-                public void done(List<ParseObject> objects, ParseException e) {
-                    if (e == null && !objects.isEmpty()) {
-                        percentList.clear();
-                        int i = 0;
-                        for (ParseObject obj : objects) {
-                            AttendanceClass lClass = new AttendanceClass();
-                            lClass.setStudentId(obj.getString("studentId"));
-                            lClass.setTotalWeek(1);
-                            if (percentList.isEmpty()) {
-                                percentList.add(lClass);
-                            } else if (!lClass.getStudentId().equals(percentList.get(i).getStudentId())) {
-                                percentList.add(lClass);
-//                                Toast.makeText(getContext(), bufferList.get(i).getStudentId(), Toast.LENGTH_SHORT).show();
-                                i++;
-                            } else {
-                                percentList.get(i).setTotalWeek(percentList.get(i).getTotalWeek() + 1);
-                            }
-                        }
-                        for (AttendanceClass obj : percentList) {
-                            double percentage = (14d - obj.getTotalWeek()) * 100 / 14;
-                            int result = (int) Math.ceil(percentage);
-                            obj.setPercentage(result);
-                        }
-                        ParseQuery<ParseObject> query1 = ParseQuery.getQuery("ISA15");
-                        query1.orderByAscending("studentId");
-                        query1.findInBackground(new FindCallback<ParseObject>() {
-                            @Override
-                            public void done(List<ParseObject> objects, ParseException e) {
-                                if (e == null && !objects.isEmpty()) {
-                                    bufferList.clear();
-                                    for (ParseObject obj : objects) {
-                                        AttendanceClass student = new AttendanceClass();
-                                        student.setStudentId(obj.getString("studentId"));
-                                        student.setStudentName(obj.getString("fullname"));
-                                        for (AttendanceClass percent : percentList) {
-                                            if (student.getStudentId().equals(percent.getStudentId())) {
-                                                student.setPercentage(percent.getPercentage());
-                                                student.setTotalWeek(percent.getTotalWeek());
-                                                break;
-                                            }
-                                        }
-                                        bufferList.add(student);
-                                    }
-                                    percentOpt("firstOpt");
-//                                    Toast.makeText(getContext(), "ELOK JE", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                    } else {
-                        Log.d("PERCENTAGE", "Error: " + e.getMessage());
-                    }
 
-                }
-            });
+        if (!week.equals("Overall Percentage") && Integer.parseInt(week) > Integer.parseInt(currentWeek)) {
+            none.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            none.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+
+            SharedPreferences preferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+            String courseId = preferences.getString("courseId", "");
+            if (option.equals("default") && !week.equals("Overall Percentage")) {
+                ParseQuery<ParseObject> query1 = ParseQuery.getQuery("ISA15");
+                query1.orderByAscending("studentId");
+                query1.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> objects, ParseException e) {
+                        if (e == null && !objects.isEmpty()) {
+                            attendanceList.clear();
+                            presentList.clear();
+                            absentList.clear();
+                            for (ParseObject object : objects) {
+                                AttendanceClass lClass = new AttendanceClass();
+                                lClass.setStudentId(object.getString("studentId"));
+                                lClass.setStudentName(object.getString("fullname"));
+                                lClass.setStatus("present");
+                                attendanceList.add(lClass);
+                            }
+                            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
+                            query.whereEqualTo("week", week);
+                            query.findInBackground(new FindCallback<ParseObject>() {
+                                public void done(List<ParseObject> objects, ParseException e) {
+                                    if (e == null && !objects.isEmpty()) {
+                                        absentList.clear();
+                                        for (ParseObject object : objects) {
+                                            AttendanceClass lClass = new AttendanceClass();
+                                            lClass.setStudentId(object.getString("studentId"));
+                                            lClass.setStatus("absent");
+                                            absentList.add(lClass);
+                                        }
+                                        for (AttendanceClass obj : attendanceList) {
+                                            for (AttendanceClass obj2 : absentList) {
+                                                if (obj.getStudentId().equals(obj2.getStudentId())) {
+                                                    obj2.setStudentName(obj.getStudentName());
+                                                    obj.setStatus("absent");
+                                                    break;
+                                                } else {
+                                                    obj.setStatus("present");
+                                                }
+                                            }
+                                            if (obj.getStatus().equals("present")) {
+                                                presentList.add(obj);
+                                            }
+                                            attendanceAdp.notifyDataSetChanged();
+                                        }
+                                    } else if (objects.isEmpty()) {
+                                        presentList.addAll(attendanceList);
+                                    } else {
+                                        Log.d("EMPTY", "Error: " + e.getMessage());
+                                    }
+                                }
+                            });
+                            displayList = new ArrayList<>(attendanceList);
+                            attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
+                            recyclerView.setAdapter(attendanceAdp);
+                            attendanceAdp.notifyDataSetChanged();
+                        } else {
+                            Log.d("EMPTY", "Error: " + e.getMessage());
+                        }
+                    }
+                });
+                radioGroup.check(R.id.optionAll);
+            } else if (week.equals("Overall Percentage")) {
+//            Toast.makeText(getContext(), "RUNNING", Toast.LENGTH_SHORT).show();
+                ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
+                query.orderByAscending("studentId");
+                query.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> objects, ParseException e) {
+                        if (e == null && !objects.isEmpty()) {
+                            percentList.clear();
+                            int i = 0;
+                            for (ParseObject obj : objects) {
+                                AttendanceClass lClass = new AttendanceClass();
+                                lClass.setStudentId(obj.getString("studentId"));
+                                lClass.setTotalWeek(1);
+                                if (percentList.isEmpty()) {
+                                    percentList.add(lClass);
+                                } else if (!lClass.getStudentId().equals(percentList.get(i).getStudentId())) {
+                                    percentList.add(lClass);
+//                                Toast.makeText(getContext(), bufferList.get(i).getStudentId(), Toast.LENGTH_SHORT).show();
+                                    i++;
+                                } else {
+                                    percentList.get(i).setTotalWeek(percentList.get(i).getTotalWeek() + 1);
+                                }
+                            }
+                            for (AttendanceClass obj : percentList) {
+                                double percentage = (14d - obj.getTotalWeek()) * 100 / 14;
+                                int result = (int) Math.ceil(percentage);
+                                obj.setPercentage(result);
+                            }
+                            ParseQuery<ParseObject> query1 = ParseQuery.getQuery("ISA15");
+                            query1.orderByAscending("studentId");
+                            query1.findInBackground(new FindCallback<ParseObject>() {
+                                @Override
+                                public void done(List<ParseObject> objects, ParseException e) {
+                                    if (e == null && !objects.isEmpty()) {
+                                        bufferList.clear();
+                                        for (ParseObject obj : objects) {
+                                            AttendanceClass student = new AttendanceClass();
+                                            student.setStudentId(obj.getString("studentId"));
+                                            student.setStudentName(obj.getString("fullname"));
+                                            for (AttendanceClass percent : percentList) {
+                                                if (student.getStudentId().equals(percent.getStudentId())) {
+                                                    student.setPercentage(percent.getPercentage());
+                                                    student.setTotalWeek(percent.getTotalWeek());
+                                                    break;
+                                                }
+                                            }
+                                            bufferList.add(student);
+                                        }
+                                        percentOpt("firstOpt");
+//                                    Toast.makeText(getContext(), "ELOK JE", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                        } else {
+                            Log.d("PERCENTAGE", "Error: " + e.getMessage());
+                        }
+
+                    }
+                });
 //            displayList = new ArrayList<>(bufferList);
 //            percentageAdp = new PercentageAdp(getContext(), displayList);
 //            recyclerView.setAdapter(percentageAdp);
 //            percentageAdp.notifyDataSetChanged();
-            radioGroup2.check(R.id.opt100);
+                radioGroup2.check(R.id.opt100);
 
-        } else if (option.equals("all")) {
-            displayList = new ArrayList<>(attendanceList);
-            attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
-            recyclerView.setAdapter(attendanceAdp);
-            attendanceAdp.notifyDataSetChanged();
-        } else if (option.equals("present")) {
-            displayList = new ArrayList<>(presentList);
-            attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
-            recyclerView.setAdapter(attendanceAdp);
-            attendanceAdp.notifyDataSetChanged();
-        } else if (option.equals("absent")) {
-            displayList = new ArrayList<>(absentList);
-            attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
-            recyclerView.setAdapter(attendanceAdp);
-            attendanceAdp.notifyDataSetChanged();
+            } else if (option.equals("all")) {
+                displayList = new ArrayList<>(attendanceList);
+                attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
+                recyclerView.setAdapter(attendanceAdp);
+                attendanceAdp.notifyDataSetChanged();
+            } else if (option.equals("present")) {
+                displayList = new ArrayList<>(presentList);
+                attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
+                recyclerView.setAdapter(attendanceAdp);
+                attendanceAdp.notifyDataSetChanged();
+            } else if (option.equals("absent")) {
+                displayList = new ArrayList<>(absentList);
+                attendanceAdp = new LecturerAttendanceAdp(getContext(), displayList);
+                recyclerView.setAdapter(attendanceAdp);
+                attendanceAdp.notifyDataSetChanged();
+            }
         }
 
 

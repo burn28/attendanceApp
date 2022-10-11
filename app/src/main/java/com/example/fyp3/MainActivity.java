@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
         week = pref.getString("week", "1");
         sDate = pref.getString("startDate", "26/09/2022");
-//        String currentDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
-        String currentDate = "28/11/2022";
+        String currentDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+//        String currentDate = "28/11/2022";
 
         setWeek(new SimpleDateFormat("dd/MM/yyyy"), sDate, currentDate);
 
@@ -142,15 +142,27 @@ public class MainActivity extends AppCompatActivity {
         try {
             int diff = (int) TimeUnit.DAYS.convert(simpleDateFormat.parse(currentDate).getTime() - simpleDateFormat.parse(startDate).getTime(), TimeUnit.MILLISECONDS);
 
-            if (diff == 7 && !week.equals("7")) {
+            if(diff >6 && !week.equals("7")){
+                int plus = diff/7;
                 currentWeek = Integer.parseInt(week);
-                currentWeek++;
+                currentWeek = currentWeek + plus;
                 week = String.valueOf(currentWeek);
                 editor.putString("week", week);
                 sDate = currentDate;
                 editor.putString("startDate", sDate);
                 editor.apply();
-            }else if(diff == 14 && week.equals("7")){
+                Toast.makeText(this, plus, Toast.LENGTH_SHORT).show();
+            }
+//            if (diff == 7 && !week.equals("7")) {
+//                currentWeek = Integer.parseInt(week);
+//                currentWeek++;
+//                week = String.valueOf(currentWeek);
+//                editor.putString("week", week);
+//                sDate = currentDate;
+//                editor.putString("startDate", sDate);
+//                editor.apply();
+//            }
+            else if(diff == 14 && week.equals("7")){
                 currentWeek = Integer.parseInt(week);
                 currentWeek++;
                 week = String.valueOf(currentWeek);
