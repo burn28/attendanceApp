@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class LecturerAttendance extends Fragment {
 
     public String week = "";
-    public String[] weeks = {"1", "2", "3", "4", "5", "6", "7",
+    public static final String[] weeks = {"1", "2", "3", "4", "5", "6", "7",
             "8", "9", "10", "11", "12", "13", "14", "Overall Percentage"};
     public AutoCompleteTextView autoCompleteTextView;
     ArrayAdapter<String> arrayAdapter;
@@ -62,6 +62,8 @@ public class LecturerAttendance extends Fragment {
     String currentWeek;
 
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -81,6 +83,8 @@ public class LecturerAttendance extends Fragment {
         autoCompleteTextView.setAdapter(arrayAdapter);
 
         none = view.findViewById(R.id.none);
+
+
 
         autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -151,10 +155,18 @@ public class LecturerAttendance extends Fragment {
                 }
             }
         });
-
+//        if(getParentFragmentManager().getBackStackEntryCount()>1){
+//            radioGroup.setVisibility(View.GONE);
+//            radioGroup2.setVisibility(View.VISIBLE);
+//            autoCompleteTextView.setAdapter(arrayAdapter);
+//            showList("percentage");
+//        }else{
+//            Toast.makeText(getContext(), "NOT", Toast.LENGTH_SHORT).show();
+//        }
 
         return view;
     }
+
 
     private void showList(String option) {
 

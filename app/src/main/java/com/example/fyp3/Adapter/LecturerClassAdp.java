@@ -59,7 +59,7 @@ public class LecturerClassAdp extends RecyclerView.Adapter<LecturerClassAdp.View
                 editor.apply();
                 ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                 new LecturerAttendance())
-                        .addToBackStack("profile")
+                        .addToBackStack("attendance")
                         .commit();
             }
         });
