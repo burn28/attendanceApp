@@ -10,14 +10,26 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.fyp3.Fragment.LecturerHome;
 import com.example.fyp3.Fragment.StudentAttendance;
 import com.example.fyp3.Fragment.StudentHome;
+import com.example.fyp3.Model.StudentClass;
 import com.google.android.material.navigation.NavigationView;
+import com.parse.FindCallback;
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import java.util.List;
 
 public class StudentActivity extends AppCompatActivity {
 
@@ -25,11 +37,14 @@ public class StudentActivity extends AppCompatActivity {
     private DrawerLayout drawer;
     private Toolbar toolbar;
     private NavigationView navigationView;
+    private TextView studentId,studentName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student);
+
+
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -40,7 +55,10 @@ public class StudentActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+
+
         navigationView = findViewById(R.id.navigation);
+        getStudent();
         navigationView.getMenu().findItem(R.id.home).setChecked(true);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -67,10 +85,7 @@ public class StudentActivity extends AppCompatActivity {
             }
         });
 
-        fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, new StudentHome())
-                .commit();
+        replaceFragment(new StudentHome());
     }
 
     private void replaceFragment(Fragment fragment){
@@ -84,10 +99,38 @@ public class StudentActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(drawer.isDrawerOpen(GravityCompat.START)){
             drawer.closeDrawer(GravityCompat.START);
+        }else if(getSupportFragmentManager().getBackStackEntryCount() > 0){
+            getSupportFragmentManager().popBackStack();
         }else{
             finish();
 //            super.onBackPressed();
         }
 
+    }
+
+    public void getStudent(){
+        View header = navigationView.getHeaderView(0);
+        studentId = header.findViewById(R.id.studentId);
+        studentName = header.findViewById(R.id.studentName);
+
+        SharedPreferences pref = getSharedPreferences("PREFS", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("ISA15");
+        query.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject object, ParseException e) {
+                if(e == null){
+                    String id = object.getString("studentId");
+                    String name = object.getString("fullname");
+                    studentId.setText(id);
+                    studentName.setText(name);
+                    editor.putString("studentId",id);
+                    editor.putString("studentName",name);
+                    editor.apply();
+                }
+            }
+        });
     }
 }

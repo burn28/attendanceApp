@@ -1,16 +1,21 @@
 package com.example.fyp3.Model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class StudentClass {
 
     private String courseId;
     private String title;
+    private String id;
+    private String name;
+
+
     //    private String studentId;
     private String week;
     private String day;
     //    private String status;
-    private ArrayList<String> weeks = new ArrayList<>();
+    private List<String> weeks = new ArrayList<>();
     private Integer totalWeek = 0;
     private Integer percentage = 100;
 
@@ -25,6 +30,22 @@ public class StudentClass {
 
     public StudentClass() {
 
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getCourseId() {
@@ -51,7 +72,7 @@ public class StudentClass {
         this.week = week;
     }
 
-    public ArrayList<String> getWeeks() {
+    public List<String> getWeeks() {
         return weeks;
     }
 

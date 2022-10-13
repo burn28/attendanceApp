@@ -71,18 +71,18 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
 
     }
 
-    private void recordAttendance(){
-        SharedPreferences pref = mContext.getSharedPreferences("DATA", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = pref.edit();
-        String action = pref.getString("record",null);
-        String courseId = pref.getString("courseId", null);
-        if(action.equals("present")){
-
-            Gson gson = new Gson();
-            StudentClass attendance = new StudentClass();
-            attendance.setCourseId(courseId);
-        }
-    }
+//    private void recordAttendance(){
+//        SharedPreferences pref = mContext.getSharedPreferences("DATA", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = pref.edit();
+//        String action = pref.getString("record",null);
+//        String courseId = pref.getString("courseId", null);
+//        if(action.equals("present")){
+//
+//            Gson gson = new Gson();
+//            StudentClass attendance = new StudentClass();
+//            attendance.setCourseId(courseId);
+//        }
+//    }
 
 
 

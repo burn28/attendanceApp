@@ -61,8 +61,20 @@ public class LecturerAttendance extends Fragment {
     private TextView none;
     String currentWeek;
 
+    @Override
+    public void onResume() {
+        super.onResume();
 
+        arrayAdapter = new ArrayAdapter<>(getContext(), R.layout.week_list, weeks);
+        autoCompleteTextView.setAdapter(arrayAdapter);
+        if(week.equals("Overall Percentage")){
+            week = "Overall Percentage";
+            showList("percentage");
+            radioGroup.setVisibility(View.GONE);
+            radioGroup2.setVisibility(View.VISIBLE);
+        }
 
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

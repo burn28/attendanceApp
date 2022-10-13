@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.fyp3.Fragment.LecturerAttendance;
@@ -27,26 +28,14 @@ public class LecturerActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         int count = getSupportFragmentManager().getBackStackEntryCount();
+        Log.d("STACK", String.valueOf(count));
 
         if (count == 0) {
             super.onBackPressed();
-        } else if (getSupportFragmentManager().getBackStackEntryAt(count - 1).getName().equals("details")) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new LecturerAttendance())
-                    .addToBackStack("attendance")
-                    .commit();
-//            Toast.makeText(this, "details", Toast.LENGTH_SHORT).show();
-        } else {
-            getSupportFragmentManager().popBackStack();
-            getSupportFragmentManager().popBackStack();
-            getSupportFragmentManager().popBackStack();
-//            Toast.makeText(this, "pop", Toast.LENGTH_SHORT).show();
         }
-//        if (count == 0) {
-//            super.onBackPressed();
-//            //additional code
-//        } else {
-//            getSupportFragmentManager().popBackStack();
-//        }
+        else {
+            getSupportFragmentManager().popBackStack();
+
+        }
     }
 }
