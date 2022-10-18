@@ -1,11 +1,14 @@
 package com.example.fyp3.Fragment;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -21,6 +25,7 @@ import android.widget.Toast;
 
 import com.example.fyp3.Adapter.LecturerAttendanceAdp;
 import com.example.fyp3.Adapter.PercentageAdp;
+import com.example.fyp3.ExcelUtils;
 import com.example.fyp3.Model.AttendanceClass;
 import com.example.fyp3.R;
 import com.parse.FindCallback;
@@ -59,7 +64,10 @@ public class LecturerAttendance extends Fragment {
     private RadioGroup radioGroup;
     private RadioGroup radioGroup2;
     private TextView none;
+    private Button exportBtn;
     String currentWeek;
+
+    private static final int STORAGE_PERMISSION_CODE = 101;
 
     @Override
     public void onResume() {
@@ -82,6 +90,8 @@ public class LecturerAttendance extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_lecturer_attendance, container, false);
         setHasOptionsMenu(true);
+
+
 
         title = view.findViewById(R.id.course);
         SharedPreferences preferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
@@ -176,8 +186,20 @@ public class LecturerAttendance extends Fragment {
 //            Toast.makeText(getContext(), "NOT", Toast.LENGTH_SHORT).show();
 //        }
 
+        exportBtn = view.findViewById(R.id.exportBtn);
+        exportBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int crntWeek = Integer.parseInt(currentWeek);
+                boolean isSuccess = ExcelUtils.exportDataIntoWorkbook(getContext(),"Attendance",bufferList, crntWeek);
+                if(isSuccess){
+                    Toast.makeText(getContext(), "Export Success", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         return view;
     }
+
 
 
     private void showList(String option) {
@@ -266,6 +288,7 @@ public class LecturerAttendance extends Fragment {
                                 AttendanceClass lClass = new AttendanceClass();
                                 lClass.setStudentId(obj.getString("studentId"));
                                 lClass.setTotalWeek(1);
+                                lClass.setWeek(obj.getString("week"));
                                 if (percentList.isEmpty()) {
                                     percentList.add(lClass);
                                 } else if (!lClass.getStudentId().equals(percentList.get(i).getStudentId())) {
@@ -274,6 +297,7 @@ public class LecturerAttendance extends Fragment {
                                     i++;
                                 } else {
                                     percentList.get(i).setTotalWeek(percentList.get(i).getTotalWeek() + 1);
+                                    percentList.get(i).setWeek(obj.getString("week"));
                                 }
                             }
                             for (AttendanceClass obj : percentList) {
@@ -296,6 +320,7 @@ public class LecturerAttendance extends Fragment {
                                                 if (student.getStudentId().equals(percent.getStudentId())) {
                                                     student.setPercentage(percent.getPercentage());
                                                     student.setTotalWeek(percent.getTotalWeek());
+                                                    student.setWeeks(percent.getWeek());
                                                     break;
                                                 }
                                             }
