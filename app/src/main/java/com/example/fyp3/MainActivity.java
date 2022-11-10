@@ -112,9 +112,9 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Fill all the field!", Toast.LENGTH_SHORT).show();
         } else {
             if (selected_role) {
+                Toast.makeText(MainActivity.this, "Please wait", Toast.LENGTH_SHORT).show();
                 ParseUser.logInInBackground(id, password, new LogInCallback() {
                     public void done(ParseUser user, ParseException e) {
-                        Toast.makeText(MainActivity.this, "Please wait", Toast.LENGTH_SHORT).show();
                         if (user != null) {
                             if (user.get("role").equals(role)) {
                                 if (role.equals("lecturer")) {

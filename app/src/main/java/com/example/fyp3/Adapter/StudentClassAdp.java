@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -45,6 +46,11 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
         colorList.add("#FDCD55");
     }
 
+    public void setFilteredList(List<StudentClass> filteredList){
+        this.mCourseList = filteredList;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public StudentClassAdp.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,6 +65,7 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
         holder.percent.setText(Class.getPercentage() + "%");
         holder.progressBar.setProgress(Class.getPercentage());
         holder.cardView.setCardBackgroundColor(Color.parseColor(colorList.get(position)));
+//        holder.cardView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.anim_fall_down));
         holder.linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

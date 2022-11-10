@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +38,8 @@ public class LecturerHome extends Fragment {
     RecyclerView.LayoutManager linearLayoutManager;
     private TextView weekText;
 
+    private SearchView searchView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -58,7 +61,41 @@ public class LecturerHome extends Fragment {
         recyclerView.setAdapter(classAdapter);
 
         showList();
+        searchView = view.findViewById(R.id.searchView);
+        searchView.clearFocus();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if(!classList.isEmpty()){
+                    filterList(newText);
+                }
+                return true;
+            }
+        });
+
+
         return view;
+    }
+
+    private void filterList(String s) {
+        List<LecturerClass> filteredList = new ArrayList<>();
+        for(LecturerClass Class : classList){
+            if(Class.getCourseId().toLowerCase().contains(s.toLowerCase()) ||
+                    Class.getTitle().toLowerCase().contains(s.toLowerCase())){
+                filteredList.add(Class);
+            }
+        }
+        if(filteredList.isEmpty()){
+            Toast.makeText(getContext(), "No data found!", Toast.LENGTH_SHORT).show();
+            classAdapter.setFilteredList(filteredList);
+        }else{
+            classAdapter.setFilteredList(filteredList);
+        }
     }
 
     private void showList() {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -37,6 +38,8 @@ public class AbsentWeekAdp extends RecyclerView.Adapter<AbsentWeekAdp.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String week = mWeekList.get(position);
         holder.textWeek.append(week);
+        holder.cardView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.anim_fall_down));
+
     }
 
     @Override
@@ -47,11 +50,13 @@ public class AbsentWeekAdp extends RecyclerView.Adapter<AbsentWeekAdp.ViewHolder
     public  class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView textWeek;
+        public CardView cardView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             textWeek = itemView.findViewById(R.id.textWeek);
+            cardView = itemView.findViewById(R.id.cardview);
         }
     }
 }

@@ -76,8 +76,8 @@ public class StudentAttendance extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
-        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
-//        day = "Wednesday";
+//        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+        day = "Wednesday";
 
 
         showList();

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +38,7 @@ public class AbsentDetails extends Fragment {
     String studentName, studentId, courseId, courseTitle;
     int percentage;
     TextView studentIdText, studentNameText, percentageText, courseText;
+    private CardView cardView;
     public List<String> weekList;
     private RecyclerView recyclerView;
     RecyclerView.LayoutManager linearLayoutManager;
@@ -62,6 +65,9 @@ public class AbsentDetails extends Fragment {
         studentIdText = includeLayout.findViewById(R.id.studentId);
         studentNameText = includeLayout.findViewById(R.id.studentName);
         percentageText = includeLayout.findViewById(R.id.percentage);
+        cardView = includeLayout.findViewById(R.id.cardview);
+        includeLayout.startAnimation(AnimationUtils.loadAnimation(this.getContext(),R.anim.anim_fall_down));
+//        cardView.startAnimation(AnimationUtils.loadAnimation(this.getContext(),R.anim.anim_fall_down));
 
         studentIdText.setText(studentId);
         studentNameText.setText(studentName);

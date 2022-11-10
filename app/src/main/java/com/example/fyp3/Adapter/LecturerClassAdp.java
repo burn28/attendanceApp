@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -32,6 +33,11 @@ public class LecturerClassAdp extends RecyclerView.Adapter<LecturerClassAdp.View
         this.mClassList = mClassList;
     }
 
+    public void setFilteredList(List<LecturerClass> filteredList){
+        this.mClassList = filteredList;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -47,6 +53,7 @@ public class LecturerClassAdp extends RecyclerView.Adapter<LecturerClassAdp.View
         holder.day.setText(Class.getDay());
         holder.time.setText(Class.getStartTime()+" - "+Class.getEndTime());
         holder.location.setText(Class.getLocation());
+        holder.cardView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.anim_fall_down));
         if(Class.getType().equals("lab")){
             holder.cardView.setCardBackgroundColor(mContext.getResources().getColor(R.color.green));
         }
