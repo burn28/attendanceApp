@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.example.fyp3.Fragment.LecturerHome;
 import com.example.fyp3.Fragment.StudentAttendance;
 import com.example.fyp3.Fragment.StudentHome;
+import com.example.fyp3.Fragment.StudentTimetable;
 import com.example.fyp3.Model.StudentClass;
 import com.google.android.material.navigation.NavigationView;
 import com.parse.FindCallback;
@@ -76,7 +77,8 @@ public class StudentActivity extends AppCompatActivity {
                         replaceFragment(new StudentAttendance());
                         break;
                     case R.id.table:
-                        Toast.makeText(StudentActivity.this, "Table Fragment", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(StudentActivity.this, "Table Fragment", Toast.LENGTH_SHORT).show();
+                        replaceFragment(new StudentTimetable());
                         break;
                     default:
                         return true;

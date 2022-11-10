@@ -21,7 +21,7 @@
             android:exported="false" />
         <activity
             android:name=".LecturerActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".register"
             android:exported="false" />
