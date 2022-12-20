@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.canhub.cropper.CropImage;
+import com.canhub.cropper.CropImageView;
 import com.parse.Parse;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
@@ -51,8 +53,19 @@ public class MainActivity extends AppCompatActivity {
 //        editor.remove("week");
 //        editor.remove("startDate");
 //        editor.apply();
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        if (currentUser != null) {
+            if(currentUser.get("role").equals("lecturer")){
+                startActivity(new Intent(MainActivity.this, LecturerActivity.class));
+                finish();
+            }else if(currentUser.get("role").equals("student")){
+                startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                finish();
+            }
+        }else {
+            ParseUser.logOut();
+        }
 
-        ParseUser.logOut();
 
 //        week = pref.getString("week", "1");
         sDate = "26/09/2022";
@@ -119,8 +132,10 @@ public class MainActivity extends AppCompatActivity {
                             if (user.get("role").equals(role)) {
                                 if (role.equals("lecturer")) {
                                     startActivity(new Intent(MainActivity.this, LecturerActivity.class));
+                                    finish();
                                 } else {
                                     startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                                    finish();
                                 }
                             } else {
                                 Toast.makeText(MainActivity.this, "Select the correct role!", Toast.LENGTH_SHORT).show();

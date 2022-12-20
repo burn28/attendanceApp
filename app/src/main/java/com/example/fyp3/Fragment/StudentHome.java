@@ -106,8 +106,6 @@ public class StudentHome extends Fragment {
                                 if (e == null) {
                                     for (ParseObject obj : objects) {
                                         course.setTitle(obj.getString("title"));
-
-
                                     }
 
                                     courseAdp.notifyDataSetChanged();

@@ -1,16 +1,24 @@
 package com.example.fyp3;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,13 +47,13 @@ public class StudentActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private NavigationView navigationView;
     private TextView studentId,studentName;
+    private static final String CHANNEL_ID = "com.example.fyp3.channel_1";
+    public NotificationCompat.Builder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student);
-
-
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -80,6 +88,10 @@ public class StudentActivity extends AppCompatActivity {
 //                        Toast.makeText(StudentActivity.this, "Table Fragment", Toast.LENGTH_SHORT).show();
                         replaceFragment(new StudentTimetable());
                         break;
+                    case R.id.logout:
+                        ParseUser.logOut();
+                        startActivity(new Intent(StudentActivity.this,MainActivity.class));
+                        finish();
                     default:
                         return true;
                 }
@@ -87,6 +99,7 @@ public class StudentActivity extends AppCompatActivity {
             }
         });
 
+        createNotificationChannel();
         replaceFragment(new StudentHome());
     }
 
@@ -109,6 +122,7 @@ public class StudentActivity extends AppCompatActivity {
         }
 
     }
+
 
     public void getStudent(){
         View header = navigationView.getHeaderView(0);
@@ -135,4 +149,26 @@ public class StudentActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+        builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Student Attendance")
+                .setContentText("There is upcoming class")
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
+    }
+
+
 }

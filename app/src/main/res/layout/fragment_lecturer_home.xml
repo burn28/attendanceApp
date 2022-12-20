@@ -7,6 +7,23 @@
     android:background="@color/layout"
     tools:context=".Fragment.LecturerHome">
 
+<!--    <ImageButton-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:src="@drawable/ic_power"-->
+<!--        -->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        android:contentDescription="Logout"/>-->
+    <ImageView
+        android:id="@+id/logoutBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/ic_power"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"/>
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"

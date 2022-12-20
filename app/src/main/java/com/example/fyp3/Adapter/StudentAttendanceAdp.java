@@ -52,8 +52,10 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.putString("courseId", mClass.getCourseId());
                 editor.putString("courseTitle", mClass.getTitle());
                 editor.putString("record","present");
+                editor.putString("startTime",mClass.getStartTime());
                 editor.apply();
-                fragment.recordAttendance();
+                byte[] data = null;
+                fragment.recordAttendance(data);
             }
         });
         holder.absentBtn.setOnClickListener(new View.OnClickListener() {
@@ -63,8 +65,13 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.putString("courseId", mClass.getCourseId());
                 editor.putString("courseTitle", mClass.getTitle());
                 editor.putString("record","absent");
+                editor.putString("startTime",mClass.getStartTime());
                 editor.apply();
-                fragment.recordAttendance();
+                byte[] data = null;
+//                fragment.recordAttendance(data);
+                fragment.takePicture();
+//                fragment.pickFromGallery();
+//                fragment.dispatchTakePictureIntent();
             }
         });
 

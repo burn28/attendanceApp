@@ -9,6 +9,8 @@ public class StudentClass {
     private String title;
     private String id;
     private String name;
+    private String startTime;
+    private String endTime;
 
 
     //    private String studentId;
@@ -102,5 +104,21 @@ public class StudentClass {
 
     public void setDay(String day) {
         this.day = day;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 }

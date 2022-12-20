@@ -1,6 +1,7 @@
 package com.example.fyp3.Adapter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +11,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fyp3.Fragment.AbsentDetails;
+import com.example.fyp3.Fragment.Evidence;
 import com.example.fyp3.Model.LecturerClass;
 import com.example.fyp3.R;
 
@@ -39,6 +43,18 @@ public class AbsentWeekAdp extends RecyclerView.Adapter<AbsentWeekAdp.ViewHolder
         String week = mWeekList.get(position);
         holder.textWeek.append(week);
         holder.cardView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.anim_fall_down));
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences.Editor editor = mContext.getSharedPreferences("PROOF", Context.MODE_PRIVATE).edit();
+                editor.putString("week", week);
+                editor.apply();
+                ((FragmentActivity) mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                new Evidence())
+                        .addToBackStack("evidence")
+                        .commit();
+            }
+        });
 
     }
 

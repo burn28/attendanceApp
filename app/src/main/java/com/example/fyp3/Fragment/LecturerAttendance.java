@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,7 +65,7 @@ public class LecturerAttendance extends Fragment {
     private RadioGroup radioGroup;
     private RadioGroup radioGroup2;
     private TextView none;
-    private Button exportBtn;
+    private ImageView exportBtn;
     String currentWeek;
 
     private static final int STORAGE_PERMISSION_CODE = 101;
@@ -105,7 +106,7 @@ public class LecturerAttendance extends Fragment {
         autoCompleteTextView.setAdapter(arrayAdapter);
 
         none = view.findViewById(R.id.none);
-
+        exportBtn = view.findViewById(R.id.exportBtn);
 
 
         autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -115,6 +116,7 @@ public class LecturerAttendance extends Fragment {
                 if (week.equals("Overall Percentage")) {
                     radioGroup.setVisibility(View.GONE);
                     radioGroup2.setVisibility(View.VISIBLE);
+                    exportBtn.setVisibility(View.VISIBLE);
                     showList("percentage");
                 } else {
                     radioGroup.setVisibility(View.VISIBLE);
@@ -186,7 +188,7 @@ public class LecturerAttendance extends Fragment {
 //            Toast.makeText(getContext(), "NOT", Toast.LENGTH_SHORT).show();
 //        }
 
-        exportBtn = view.findViewById(R.id.exportBtn);
+
         exportBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

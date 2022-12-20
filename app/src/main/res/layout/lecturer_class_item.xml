@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:contentPaddingLeft="20dp"
-    app:contentPaddingRight="20dp"
-    app:contentPaddingTop="15dp"
+    app:contentPaddingRight="0dp"
+    app:contentPaddingTop="0dp"
     app:contentPaddingBottom="15dp"
     app:cardCornerRadius="26dp"
     app:cardElevation="5dp"
@@ -23,10 +23,13 @@
         app:layout_constraintTop_toTopOf="parent">
 
     <TextView
+        android:layout_marginTop="15dp"
         android:id="@+id/classTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="60dp"
         android:textSize="20dp"
+        android:textStyle="bold"
         android:textColor="@color/white"
         android:text="ID and Title subject"/>
 
@@ -55,6 +58,15 @@
         android:text="Location"/>
 
     </LinearLayout>
-
+    <ImageButton
+        android:id="@+id/cancelBtn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="5dp"
+        android:background="@drawable/corner_bg"
+        android:backgroundTint="#405DB5"
+        android:src="@drawable/ic_cross"
+        android:layout_gravity="end"
+        android:contentDescription="Cancel class"/>
 
 </androidx.cardview.widget.CardView>

@@ -1,6 +1,7 @@
 package com.example.fyp3.Fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -13,13 +14,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.fyp3.Adapter.LecturerClassAdp;
 import com.example.fyp3.LecturerActivity;
+import com.example.fyp3.MainActivity;
 import com.example.fyp3.Model.LecturerClass;
 import com.example.fyp3.R;
+import com.example.fyp3.StudentActivity;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -37,7 +41,7 @@ public class LecturerHome extends Fragment {
     private List<LecturerClass> classList;
     RecyclerView.LayoutManager linearLayoutManager;
     private TextView weekText;
-
+    private ImageView logoutBtn;
     private SearchView searchView;
 
     @Override
@@ -75,6 +79,16 @@ public class LecturerHome extends Fragment {
                     filterList(newText);
                 }
                 return true;
+            }
+        });
+
+        logoutBtn = view.findViewById(R.id.logoutBtn);
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ParseUser.logOut();
+                startActivity(new Intent(getActivity(), MainActivity.class));
+                getActivity().finish();
             }
         });
 

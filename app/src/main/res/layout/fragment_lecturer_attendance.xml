@@ -7,14 +7,27 @@
     android:background="@color/layout"
     tools:context=".Fragment.LecturerAttendance">
 
-    <Button
+<!--    <Button-->
+<!--        android:id="@+id/exportBtn"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Export"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        android:visibility="visible"/>-->
+    <ImageView
         android:id="@+id/exportBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Export"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:layout_marginTop="20dp"
+        android:padding="5dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/round_bg"
+        android:backgroundTint="#F2BF40"
+        android:src="@drawable/ic_save"
+        android:visibility="gone"/>
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
