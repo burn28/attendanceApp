@@ -1,16 +1,21 @@
 package com.example.fyp3.Fragment;
 
+import com.example.fyp3.FileUtil;
 import static android.app.Activity.RESULT_OK;
 import static android.media.MediaRecorder.VideoSource.CAMERA;
+import static android.view.View.GONE;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -22,12 +27,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.util.Pair;
@@ -35,12 +43,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.atwa.filepicker.core.FilePicker;
 import com.canhub.cropper.CropImage;
 import com.canhub.cropper.CropImageContract;
 import com.canhub.cropper.CropImageContractOptions;
 import com.canhub.cropper.CropImageOptions;
 import com.canhub.cropper.CropImageView;
 import com.example.fyp3.Adapter.StudentAttendanceAdp;
+
 import com.example.fyp3.Model.StudentClass;
 import com.example.fyp3.R;
 import com.example.fyp3.StudentActivity;
@@ -58,7 +68,10 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -82,8 +95,10 @@ public class StudentAttendance extends Fragment {
     public String currentPhotoPath;
     Uri imageUri;
     Context fContext;
-
-
+    File finalFile;
+    Button confirmBtn;
+    String selectedOpt;
+    String reason;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -101,7 +116,7 @@ public class StudentAttendance extends Fragment {
         editor.clear();
         editor.apply();
 
-
+        confirmBtn = view.findViewById(R.id.confirm_button);
         courses = new ArrayList<>();
 
         recyclerView = view.findViewById(R.id.recycler);
@@ -116,18 +131,32 @@ public class StudentAttendance extends Fragment {
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
         day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
-//        day = "Monday";
+//        day = "Tuesday";
         time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 //        Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
 //        day = "Wednesday";
 
 
+        confirmBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] bytes = new byte[0];
+                try {
+                    bytes = Files.readAllBytes(finalFile.toPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                recordAttendance(bytes);
+
+            }
+        });
         showList();
 
 //        popUpNotification();
 
         return view;
     }
+
 
     private void showList() {
 
@@ -216,7 +245,7 @@ public class StudentAttendance extends Fragment {
 
     }
 
-    public void recordAttendance(byte[] imageByte) {
+    public void recordAttendance(byte[] fileByte) {
         SharedPreferences pref = getActivity().getSharedPreferences("DATA", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         String action = pref.getString("record", null);
@@ -255,12 +284,17 @@ public class StudentAttendance extends Fragment {
             editor.apply();
 
             if (action.equals("absent")) {
-                ParseFile file = new ParseFile(imageByte);
                 ParseObject parseObject = new ParseObject(courseId);
                 parseObject.put("studentId", ParseUser.getCurrentUser().getUsername());
                 parseObject.put("week", week);
-                parseObject.put("evidence", file);
+                parseObject.put("reason", reason);
+                if(fileByte.length!=0){
+                    ParseFile file = new ParseFile(finalFile.getName(),fileByte);
+                    parseObject.put("evidence", file);
+                }
                 parseObject.saveInBackground();
+                Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                confirmBtn.setVisibility(GONE);
             }
             showList();
 //        for(int i=0; i<classList.size(); i++){
@@ -272,76 +306,137 @@ public class StudentAttendance extends Fragment {
         }
     }
 
-    //Android native to takePicture
-    public void takePicture(){
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Pair<Uri, String> p = createImage();
-        Log.e("PIC","error");
-        Uri finalUri = p.first;
-        String imageFileName = p.second;
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, finalUri);
-//        mGetContent.launch(takePictureIntent);
-        startActivityForResult(takePictureIntent, CAMERA);
-        String imagePath = "Pictures/Student Attendance/"+imageFileName;
+    public void showOptDialog(){
+        final String[] opt = {"Sick Leave", "Programme Leave", "Others"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Choose Reason");
+
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());
+        builder1.setTitle("State your reason");
+        final EditText input = new EditText(getContext());
+        builder1.setView(input);
+        builder1.setPositiveButton("Sumbit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                reason = input.getText().toString().trim();
+                byte[] bytes = new byte[0];
+                recordAttendance(bytes);
+                Log.e("REASON", reason);
+                dialogInterface.dismiss();
+            }
+        });
+        builder1.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
+
+        builder.setSingleChoiceItems(opt, -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                selectedOpt = opt[i];
+
+            }
+        });
+        builder.setPositiveButton("Proceed", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+//                selectedOpt = opt[i];
+                if(selectedOpt.equals("Sick Leave") || selectedOpt.equals("Programme Leave")){
+                    dialogInterface.dismiss();
+
+                    chooseFile();
+                }else{
+                    //popup to fill the reason
+                    dialogInterface.dismiss();
+                    builder1.create().show();
+                    Log.e("INDEX", selectedOpt);
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
     }
 
-    //takePicture with external lib
-    public void pickFromGallery() {
-        ImagePicker.with(this)
-                .cropSquare()    			//Crop image(Optional), Check Customization for more option
-//                .compress(1024)			//Final image size will be less than 1 MB(Optional)
-                .maxResultSize(720, 720)//Final image resolution will be less than 1080 x 1080(Optional)
-                .start();
+    public void chooseFile(){
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+//        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent,28);
+
     }
 
-    //save img file and return imagePath
-    public Pair<Uri, String> createImage(){
-        Uri uri = null;
-        ContentResolver resolver = getContext().getContentResolver();
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-            uri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-            Log.d("URI", "first");
-        }else {
-            uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            Log.d("URI", "second");
-        }
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, imageFileName+".jpg");
-        contentValues.put(MediaStore.Images.Media.RELATIVE_PATH,"Pictures/"+"Student Attendance/");
-        Uri finalUri = resolver.insert(uri, contentValues);
-//        Uri finalUri = resolver.insert(nUri, contentValues);
-        String imagePath = "/storage/emulated/0/"+"Pictures/Student Attendance/"+imageFileName+".jpg";
-        imageUri = finalUri;
-
-        return new Pair<>(finalUri, imagePath);
-    }
 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == CAMERA){
-            if(resultCode == RESULT_OK){
-                Toast.makeText(getContext(), "ADDED", Toast.LENGTH_SHORT).show();
-                Pair<Uri, String> p = createImage();
-                recordAttendance(getBytes(p.second));
-
-            }
-        }
+//        if(requestCode == CAMERA){
+//            if(resultCode == RESULT_OK){
+//                Toast.makeText(getContext(), "ADDED", Toast.LENGTH_SHORT).show();
+//                Pair<Uri, String> p = createImage();
+//                recordAttendance(getBytes(p.second));
+//                Log.e("Pic","activityResult");
+//
+//            }
+//        }
 //        else if(requestCode == 2404){
 //            if(resultCode == RESULT_OK){
-//                Toast.makeText(getContext(), "ADDED ADDED", Toast.LENGTH_SHORT).show();
-//                Pair<Uri, String> p = createImage(data.getData());
+//                Toast.makeText(getContext(), "ADDED 2404", Toast.LENGTH_SHORT).show();
+//                Pair<Uri, String> p = createImage();
 //                Log.e("image", p.second);
-////                recordAttendance(getBytes(p.second));
+//                recordAttendance(getBytes(p.second));
 //            }
 //        }else if (resultCode == ImagePicker.RESULT_ERROR) {
 //            Toast.makeText(getContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
 //        }
+        if(requestCode == 28){
+            if (resultCode == RESULT_OK){
+                if(data == null){
+                    return;
+                }else{
+                    Uri u = data.getData();
+//                    String path = getFilePath(data);
+                    try {
+                        finalFile = FileUtil.from(getContext(),data.getData());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e("ERROR: ", e.getMessage());
+                    }
+//                    finalFile = new File(data.getData().getPath());
+                    Log.e("Result: ", data.getData().toString());
+//                    recordAttendance(getBytes(data.getData()));
+                    if(finalFile!=null){
+                        Log.e("FILE","NOT NULL");
+                        confirmBtn.setVisibility(View.VISIBLE);
+                    }else {
+                        Log.e("FILE","NULL");
+                    }
+                }
+            }
+        }
     }
+
+    public String getFilePath(Intent data){
+        Uri selectedFileUri = data.getData();
+        File file = new File(selectedFileUri.getPath());
+        String[] split = file.getPath().split(":");
+        String selectedPath = split[1];
+        String stringPath = file.getAbsolutePath();
+        Log.e("PATH", stringPath);
+        return stringPath;
+    }
+
 
     //get image byte[] to save into cloud db
     public byte[] getBytes(String imagePath){
@@ -370,10 +465,10 @@ public class StudentAttendance extends Fragment {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         bitmap.recycle();
+        Log.e("Pic","getByte");
 
         return stream.toByteArray();
     }
-
 
 
     public void popUpNotification() {
@@ -423,5 +518,52 @@ public class StudentAttendance extends Fragment {
 
         }
     }
+
+    //    //Android native to takePicture
+//    public void takePicture(){
+//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        Pair<Uri, String> p = createImage();
+//        Log.e("PIC","error");
+//        Uri finalUri = p.first;
+//        String imageFileName = p.second;
+//        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, finalUri);
+////        mGetContent.launch(takePictureIntent);
+//        startActivityForResult(takePictureIntent, CAMERA);
+//        String imagePath = "Pictures/Student Attendance/"+imageFileName;
+//    }
+//
+//    //takePicture with external lib
+//    public void pickFromGallery() {
+//        ImagePicker.with(this)
+//                .cropSquare()    			//Crop image(Optional), Check Customization for more option
+////                .compress(1024)			//Final image size will be less than 1 MB(Optional)
+//                .maxResultSize(720, 720)//Final image resolution will be less than 1080 x 1080(Optional)
+//                .start();
+//    }
+//
+//    //save img file and return imagePath
+//    public Pair<Uri, String> createImage(){
+//        Uri uri = null;
+//        ContentResolver resolver = getContext().getContentResolver();
+//
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+//            uri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+//            Log.d("URI", "first");
+//        }else {
+//            uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+//            Log.d("URI", "second");
+//        }
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
+//        String imageFileName = "JPEG_" + timeStamp + "_";
+//        ContentValues contentValues = new ContentValues();
+//        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, imageFileName+".jpg");
+//        contentValues.put(MediaStore.Images.Media.RELATIVE_PATH,"Pictures/"+"Student Attendance/");
+//        Uri finalUri = resolver.insert(uri, contentValues);
+////        Uri finalUri = resolver.insert(nUri, contentValues);
+//        String imagePath = "/storage/emulated/0/"+"Pictures/Student Attendance/"+imageFileName+".jpg";
+//        imageUri = finalUri;
+//        Log.e("Pic","createImage");
+//        return new Pair<>(finalUri, imagePath);
+//    }
 
 }

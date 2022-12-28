@@ -68,8 +68,10 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.putString("startTime",mClass.getStartTime());
                 editor.apply();
                 byte[] data = null;
+//                fragment.chooseFile();
+                fragment.showOptDialog();
 //                fragment.recordAttendance(data);
-                fragment.takePicture();
+//                fragment.takePicture();
 //                fragment.pickFromGallery();
 //                fragment.dispatchTakePictureIntent();
             }

@@ -333,7 +333,12 @@ public class LecturerAttendance extends Fragment {
                                     }
                                 }
                             });
-                        } else {
+                        }else if(objects.isEmpty()){
+                            Log.d("PERCENTAGE", "Error: Empty");
+                            none.setVisibility(View.VISIBLE);
+                            recyclerView.setVisibility(View.GONE);
+                        }
+                        else if(e != null) {
                             Log.d("PERCENTAGE", "Error: " + e.getMessage());
                         }
 
