@@ -1,10 +1,12 @@
 package com.example.fyp3.Fragment;
 
 import com.example.fyp3.FileUtil;
+
 import static android.app.Activity.RESULT_OK;
 import static android.media.MediaRecorder.VideoSource.CAMERA;
 import static android.view.View.GONE;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -15,9 +17,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,8 +40,11 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.util.Pair;
@@ -58,6 +67,9 @@ import com.example.fyp3.StudentActivity;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.dhaval2404.imagepicker.ImagePickerActivity;
 import com.github.dhaval2404.imagepicker.constant.ImageProvider;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.parse.FindCallback;
@@ -92,13 +104,15 @@ public class StudentAttendance extends Fragment {
     private TextView weekText;
     private String time;
     private static final String CHANNEL_ID = "com.example.fyp3.channel_1";
-    public String currentPhotoPath;
-    Uri imageUri;
-    Context fContext;
+
     File finalFile;
     Button confirmBtn;
     String selectedOpt;
     String reason;
+
+    public static final int LOCATION_REQUEST_CODE = 100;
+    FusedLocationProviderClient fusedLocationProviderClient;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -130,8 +144,8 @@ public class StudentAttendance extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
-        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
-//        day = "Tuesday";
+//        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+        day = "Tuesday";
         time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 //        Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
 //        day = "Wednesday";
@@ -154,6 +168,8 @@ public class StudentAttendance extends Fragment {
 
 //        popUpNotification();
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        getLocation();
         return view;
     }
 
@@ -288,8 +304,8 @@ public class StudentAttendance extends Fragment {
                 parseObject.put("studentId", ParseUser.getCurrentUser().getUsername());
                 parseObject.put("week", week);
                 parseObject.put("reason", reason);
-                if(fileByte.length!=0){
-                    ParseFile file = new ParseFile(finalFile.getName(),fileByte);
+                if (fileByte.length != 0) {
+                    ParseFile file = new ParseFile(finalFile.getName(), fileByte);
                     parseObject.put("evidence", file);
                 }
                 parseObject.saveInBackground();
@@ -305,6 +321,44 @@ public class StudentAttendance extends Fragment {
 //        }
         }
     }
+
+    public void askLocationPermission(){
+        ActivityCompat.requestPermissions((Activity) getContext(), new String[]
+                {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+    }
+    public void getLocation() {
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getContext(), "getLocation", Toast.LENGTH_SHORT).show();
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            if (location != null) {
+                                Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                                List<Address> addresses = null;
+                                try {
+                                    addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                                    Log.e("GPS", "latitude: "+ addresses.get(0).getLatitude());
+                                    Log.e("GPS", "longitude: "+ addresses.get(0).getLongitude());
+                                    Log.e("GPS", "address: "+ addresses.get(0).getAddressLine(0));
+                                    Log.e("GPS", "city: "+ addresses.get(0).getLocality());
+                                    Log.e("GPS", "country: "+ addresses.get(0).getCountryName());
+                                    Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+        }
+        else {
+            askLocationPermission();
+        }
+
+    }
+
+
 
     public void showOptDialog(){
         final String[] opt = {"Sick Leave", "Programme Leave", "Others"};
