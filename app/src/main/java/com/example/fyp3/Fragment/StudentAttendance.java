@@ -3,6 +3,7 @@ package com.example.fyp3.Fragment;
 import com.example.fyp3.FileUtil;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.LOCATION_SERVICE;
 import static android.media.MediaRecorder.VideoSource.CAMERA;
 import static android.view.View.GONE;
 
@@ -16,6 +17,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -24,6 +26,7 @@ import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -60,6 +63,7 @@ import com.canhub.cropper.CropImageOptions;
 import com.canhub.cropper.CropImageView;
 import com.example.fyp3.Adapter.StudentAttendanceAdp;
 
+import com.example.fyp3.LoadingDialog;
 import com.example.fyp3.Model.StudentClass;
 import com.example.fyp3.R;
 import com.example.fyp3.StudentActivity;
@@ -67,11 +71,21 @@ import com.example.fyp3.StudentActivity;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.dhaval2404.imagepicker.ImagePickerActivity;
 import com.github.dhaval2404.imagepicker.constant.ImageProvider;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.maps.android.PolyUtil;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -111,7 +125,11 @@ public class StudentAttendance extends Fragment {
     String reason;
 
     public static final int LOCATION_REQUEST_CODE = 100;
+    public static final int REQUEST_CHECK_SETTINGS = 0x1;
     FusedLocationProviderClient fusedLocationProviderClient;
+    LocationManager locationManager;
+
+    public LoadingDialog loadingDialog;
 
 
     @Override
@@ -144,13 +162,13 @@ public class StudentAttendance extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
-//        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
-        day = "Tuesday";
+        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+//        day = "Tuesday";
         time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 //        Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
 //        day = "Wednesday";
 
-
+        loadingDialog = new LoadingDialog(getActivity());
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -167,9 +185,10 @@ public class StudentAttendance extends Fragment {
         showList();
 
 //        popUpNotification();
-
+        locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
-        getLocation();
+        turnOnGPS();
+//        getLocation();
         return view;
     }
 
@@ -303,7 +322,9 @@ public class StudentAttendance extends Fragment {
                 ParseObject parseObject = new ParseObject(courseId);
                 parseObject.put("studentId", ParseUser.getCurrentUser().getUsername());
                 parseObject.put("week", week);
-                parseObject.put("reason", reason);
+                if(reason != null){
+                    parseObject.put("reason", reason);
+                }
                 if (fileByte.length != 0) {
                     ParseFile file = new ParseFile(finalFile.getName(), fileByte);
                     parseObject.put("evidence", file);
@@ -326,10 +347,70 @@ public class StudentAttendance extends Fragment {
         ActivityCompat.requestPermissions((Activity) getContext(), new String[]
                 {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
     }
+
+    public void turnOnGPS(){
+        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+                .setMinUpdateIntervalMillis(3000).build();
+        LocationSettingsRequest.Builder locationSetting = new LocationSettingsRequest.Builder();
+        locationSetting.addLocationRequest(locationRequest);
+
+        SettingsClient settingsClient = LocationServices.getSettingsClient(getContext());
+        Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(locationSetting.build());
+
+        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                Log.e("LSR", "Success");
+            }
+        });
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("LSR", "Fail:"+e);
+                e.printStackTrace();
+                if(e instanceof ResolvableApiException){
+                    ResolvableApiException resolvableApiException = (ResolvableApiException) e;
+                    try {
+                        resolvableApiException.startResolutionForResult(getActivity(), REQUEST_CHECK_SETTINGS);
+
+
+                    } catch (IntentSender.SendIntentException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
     public void getLocation() {
+        LatLng upperLeft1 = new LatLng(2.8525253649524265, 101.76843307238708);
+        LatLng upperRight1 = new LatLng(2.8525188709429625, 101.76858181060345);
+        LatLng lowerLeft1 = new LatLng(2.851545195760625, 101.7684395629876);
+        LatLng lowerRight1 = new LatLng(2.851541433082251, 101.76855982326943);
+        List<LatLng> polygonPts = new ArrayList<>();
+        polygonPts.add(upperLeft1);
+        polygonPts.add(upperRight1);
+        polygonPts.add(lowerRight1);
+        polygonPts.add(lowerLeft1);
+
+        LatLng upperLeft2 = new LatLng(2.8520676948409656, 101.76766283267942);
+        LatLng upperRight2 = new LatLng(2.8520703041939037, 101.76840649993802);
+        LatLng lowerLeft2 = new LatLng(2.851731705481608, 101.76774971322024);
+        LatLng lowerRight2 = new LatLng(2.8517101881802343, 101.76841249625413);
+        List<LatLng> polygonPts2 = new ArrayList<>();
+        polygonPts2.add(upperLeft2);
+        polygonPts2.add(upperRight2);
+        polygonPts2.add(lowerRight2);
+        polygonPts2.add(lowerLeft2);
+
+
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getContext(), "getLocation", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getContext(), "getLocation", Toast.LENGTH_SHORT).show();
+
+            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                Toast.makeText(getContext(), "Please turn On GPS", Toast.LENGTH_SHORT).show();
+            }
             fusedLocationProviderClient.getLastLocation()
                     .addOnSuccessListener(new OnSuccessListener<Location>() {
                         @Override
@@ -339,15 +420,34 @@ public class StudentAttendance extends Fragment {
                                 List<Address> addresses = null;
                                 try {
                                     addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+//                                    double latitude = addresses.get(0).getLatitude();
+//                                    double longitude = addresses.get(0).getLongitude();
+                                    double latitude = 2.8518691171806414;
+                                    double longitude = 101.7680472556706;
                                     Log.e("GPS", "latitude: "+ addresses.get(0).getLatitude());
                                     Log.e("GPS", "longitude: "+ addresses.get(0).getLongitude());
                                     Log.e("GPS", "address: "+ addresses.get(0).getAddressLine(0));
                                     Log.e("GPS", "city: "+ addresses.get(0).getLocality());
                                     Log.e("GPS", "country: "+ addresses.get(0).getCountryName());
-                                    Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+//                                    Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+                                    boolean isWithin1 = PolyUtil.containsLocation(latitude, longitude,polygonPts,true);
+                                    boolean isWithin2 = PolyUtil.containsLocation(latitude, longitude,polygonPts2,true);
+
+                                    if (isWithin1 || isWithin2){
+                                        Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+                                        byte[] bytes = new byte[0];
+                                        recordAttendance(bytes);
+                                    }else{
+                                        Toast.makeText(getContext(), "Not within", Toast.LENGTH_SHORT).show();
+                                    }
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
+                                loadingDialog.dismissDialog();
+
+                            }else{
+//                                Toast.makeText(getContext(), "getLocation: NULL", Toast.LENGTH_SHORT).show();
+                                getLocation();
                             }
                         }
                     });

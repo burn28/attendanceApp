@@ -175,6 +175,8 @@ public class StudentTimetable extends Fragment {
         colorMap.put("UTU3012","#F2BF40");
         colorMap.put("SKJ4183","#21de80");
         colorMap.put("SKM3013","#DA9725");
+        colorMap.put("SKJ4284","#2568da");
+        colorMap.put("SKJ4301", "#bc4390");
 
         getEnrollment();
         return view;

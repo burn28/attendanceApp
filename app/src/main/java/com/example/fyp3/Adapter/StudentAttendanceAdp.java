@@ -55,7 +55,9 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.putString("startTime",mClass.getStartTime());
                 editor.apply();
                 byte[] data = null;
-                fragment.recordAttendance(data);
+                fragment.loadingDialog.startLoadingDialog(fragment.getLayoutInflater());
+                fragment.getLocation();
+//                fragment.recordAttendance(data);
             }
         });
         holder.absentBtn.setOnClickListener(new View.OnClickListener() {
