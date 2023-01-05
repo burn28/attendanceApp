@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        week = pref.getString("week", "1");
-        sDate = "26/09/2022";
+        sDate = "26/10/2022";
         String currentDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
 //        String currentDate = "21/11/2022";
 

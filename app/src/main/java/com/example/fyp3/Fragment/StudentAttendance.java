@@ -92,6 +92,7 @@ import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -177,9 +178,10 @@ public class StudentAttendance extends Fragment {
                     bytes = Files.readAllBytes(finalFile.toPath());
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.e("Confirm", e.getMessage());
                 }
+                Log.e("Bytes", String.valueOf(bytes.length));
                 recordAttendance(bytes);
-
             }
         });
         showList();
@@ -319,27 +321,49 @@ public class StudentAttendance extends Fragment {
             editor.apply();
 
             if (action.equals("absent")) {
+                Log.e("CourseId",courseId);
+                Log.e("student",ParseUser.getCurrentUser().getUsername());
+                Log.e("week",week);
                 ParseObject parseObject = new ParseObject(courseId);
                 parseObject.put("studentId", ParseUser.getCurrentUser().getUsername());
                 parseObject.put("week", week);
                 if(reason != null){
                     parseObject.put("reason", reason);
+                    parseObject.saveInBackground();
+                    Toast.makeText(getContext(), "Record save successfully.", Toast.LENGTH_SHORT).show();
                 }
-                if (fileByte.length != 0) {
+                else if (fileByte.length != 0) {
                     ParseFile file = new ParseFile(finalFile.getName(), fileByte);
-                    parseObject.put("evidence", file);
+                    file.saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            if(e == null){
+                                parseObject.put("evidence", file);
+                                parseObject.saveInBackground(new SaveCallback() {
+
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if(e == null){
+                                            Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                                            confirmBtn.setVisibility(GONE);
+                                        }else {
+                                            Log.e("parse", e.getMessage());
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                            }else {
+                                Log.e("parseFile", e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
-                parseObject.saveInBackground();
-                Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
-                confirmBtn.setVisibility(GONE);
             }
-            showList();
-//        for(int i=0; i<classList.size(); i++){
-//            if(classList.get(i).getCourseId().equals(courseId)){
-//                classList.remove(i);
-//                attendanceAdp.notifyDataSetChanged();
+//            else if(action.equals("present")){
+//
 //            }
-//        }
+            showList();
         }
     }
 
@@ -420,10 +444,10 @@ public class StudentAttendance extends Fragment {
                                 List<Address> addresses = null;
                                 try {
                                     addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-//                                    double latitude = addresses.get(0).getLatitude();
-//                                    double longitude = addresses.get(0).getLongitude();
-                                    double latitude = 2.8518691171806414;
-                                    double longitude = 101.7680472556706;
+                                    double latitude = addresses.get(0).getLatitude();
+                                    double longitude = addresses.get(0).getLongitude();
+//                                    double latitude = 2.8518691171806414;
+//                                    double longitude = 101.7680472556706;
                                     Log.e("GPS", "latitude: "+ addresses.get(0).getLatitude());
                                     Log.e("GPS", "longitude: "+ addresses.get(0).getLongitude());
                                     Log.e("GPS", "address: "+ addresses.get(0).getAddressLine(0));
@@ -435,8 +459,9 @@ public class StudentAttendance extends Fragment {
 
                                     if (isWithin1 || isWithin2){
                                         Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Within the area", Toast.LENGTH_SHORT).show();
                                         byte[] bytes = new byte[0];
-                                        recordAttendance(bytes);
+//                                        recordAttendance(bytes);
                                     }else{
                                         Toast.makeText(getContext(), "Not within", Toast.LENGTH_SHORT).show();
                                     }
