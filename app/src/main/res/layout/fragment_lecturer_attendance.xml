@@ -107,15 +107,22 @@
                 android:id="@+id/optionPresent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
+                android:layout_marginStart="10dp"
                 android:text="Present" />
 
             <RadioButton
                 android:id="@+id/optionAbsent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
+                android:layout_marginStart="10dp"
                 android:text="Absent" />
+
+            <RadioButton
+                android:id="@+id/optionNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="No record" />
 
         </RadioGroup>
 

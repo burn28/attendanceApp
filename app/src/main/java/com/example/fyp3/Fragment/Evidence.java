@@ -104,19 +104,46 @@ public class Evidence extends Fragment {
     public void getReason(){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
         query.whereEqualTo("studentId", studentId);
-        query.whereEqualTo("week", week);
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject object, ParseException e) {
-                String reason = object.getString("reason");
-                if(reason!=null){
+                String reasonId = object.getString("week"+week);
+                if(reasonId.equals("no record")){
                     download.setVisibility(View.GONE);
-                    reasonText.setText(reason);
-                }else{
-                    download.setVisibility(View.VISIBLE);
+                    reasonText.setText("no record");
+                }else {
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("reason");
+                    query.getInBackground(reasonId, new GetCallback<ParseObject>() {
+                        @Override
+                        public void done(ParseObject object, ParseException e) {
+                            if(e == null){
+                                String sentence = object.getString("sentence");
+                                if(sentence!=null){
+                                    download.setVisibility(View.GONE);
+                                    reasonText.setText(sentence);
+                                }else{
+                                    download.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        }
+                    });
                 }
+
             }
         });
+//        query.whereEqualTo("week", week);
+//        query.getFirstInBackground(new GetCallback<ParseObject>() {
+//            @Override
+//            public void done(ParseObject object, ParseException e) {
+//                String reason = object.getString("reason");
+//                if(reason!=null){
+//                    download.setVisibility(View.GONE);
+//                    reasonText.setText(reason);
+//                }else{
+//                    download.setVisibility(View.VISIBLE);
+//                }
+//            }
+//        });
     }
 
     private static boolean isExternalStorageReadOnly() {

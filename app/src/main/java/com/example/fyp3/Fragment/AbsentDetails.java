@@ -98,23 +98,32 @@ public class AbsentDetails extends Fragment {
             absentWeekAdp.notifyDataSetChanged();
             recyclerView.setAdapter(absentWeekAdp);
         } else {
-            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
-            query.whereEqualTo("studentId", studentId);
-            query.findInBackground(new FindCallback<ParseObject>() {
-                @Override
-                public void done(List<ParseObject> objects, ParseException e) {
-                    if (e == null) {
-                        weekList.clear();
-                        for (ParseObject obj : objects) {
-                            String week = obj.getString("week");
-                            weekList.add(week);
-                            absentWeekAdp.notifyDataSetChanged();
-                        }
-                    } else {
-
-                    }
-                }
-            });
+//            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
+//            query.whereEqualTo("studentId", studentId);
+//            query.findInBackground(new FindCallback<ParseObject>() {
+//                @Override
+//                public void done(List<ParseObject> objects, ParseException e) {
+//                    if (e == null) {
+//                        weekList.clear();
+//                        for (ParseObject obj : objects) {
+//                            String week = obj.getString("week");
+//                            weekList.add(week);
+//                            absentWeekAdp.notifyDataSetChanged();
+//                        }
+//                    } else {
+//
+//                    }
+//                }
+//            });
+            weekList.clear();
+            Gson gson = new Gson();
+            String jsonText = pref.getString("weeks", null);
+            Type type = new TypeToken<ArrayList<String>>() {
+            }.getType();
+            weekList = gson.fromJson(jsonText, type);
+            absentWeekAdp = new AbsentWeekAdp(getContext(), weekList);
+            absentWeekAdp.notifyDataSetChanged();
+            recyclerView.setAdapter(absentWeekAdp);
         }
     }
 

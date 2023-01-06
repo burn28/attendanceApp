@@ -31,6 +31,7 @@ import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class StudentHome extends Fragment {
 
@@ -41,6 +42,7 @@ public class StudentHome extends Fragment {
     RecyclerView.LayoutManager linearLayoutManager;
     private SearchView searchView;
     private boolean complete;
+    String currentWeek;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,7 +51,8 @@ public class StudentHome extends Fragment {
         View view = inflater.inflate(R.layout.fragment_student_home, container, false);
 
         SharedPreferences pref = getActivity().getSharedPreferences("DATE", Context.MODE_PRIVATE);
-        String week = "Week " + pref.getString("week", "1");
+        currentWeek = pref.getString("week", "1");
+        String week = "Week " + currentWeek;
         weekText = view.findViewById(R.id.textWeek);
         weekText.setText(week);
 
@@ -77,7 +80,14 @@ public class StudentHome extends Fragment {
             }
         });
 
-        showList();
+        weekText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showList();
+            }
+        });
+
+
 
 
         return view;
@@ -107,7 +117,6 @@ public class StudentHome extends Fragment {
                                     for (ParseObject obj : objects) {
                                         course.setTitle(obj.getString("title"));
                                     }
-
                                     courseAdp.notifyDataSetChanged();
 
                                 } else {
@@ -117,23 +126,43 @@ public class StudentHome extends Fragment {
                         });
                         ParseQuery<ParseObject> query3 = ParseQuery.getQuery(course.getCourseId());
                         query3.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
-                        query3.findInBackground(new FindCallback<ParseObject>() {
+//                        query3.findInBackground(new FindCallback<ParseObject>() {
+//                            @Override
+//                            public void done(List<ParseObject> objects, ParseException e) {
+//                                if (e == null) {
+//                                    if (!objects.isEmpty()) {
+//                                        for (ParseObject obj : objects) {
+//                                            course.setWeeks(obj.getString("week"));
+//                                            course.setTotalWeek(course.getTotalWeek() + 1);
+//                                        }
+//                                        double percentage = (14d - course.getTotalWeek()) * 100 / 14;
+//                                        int result = (int) Math.ceil(percentage);
+//                                        course.setPercentage(result);
+//
+//                                        courseAdp.notifyDataSetChanged();
+//                                    }
+//                                } else {
+//                                    Log.d("QUERY3", "Error: " + e.getMessage());
+//                                }
+//                            }
+//                        });
+                        query3.getFirstInBackground(new GetCallback<ParseObject>() {
                             @Override
-                            public void done(List<ParseObject> objects, ParseException e) {
+                            public void done(ParseObject object, ParseException e) {
                                 if (e == null) {
-                                    if (!objects.isEmpty()) {
-                                        for (ParseObject obj : objects) {
-                                            course.setWeeks(obj.getString("week"));
+                                    course.setTotalWeek(course.getTotalWeek() + 1);
+                                    for (int j = 1; j <= Integer.parseInt(currentWeek); j++) {
+                                        course.setStatus("week" + j, object.getString("week" + j));
+                                        if (!Objects.equals(object.getString("week" + j), "present")) {
                                             course.setTotalWeek(course.getTotalWeek() + 1);
                                         }
-                                        double percentage = (14d - course.getTotalWeek()) * 100 / 14;
-                                        int result = (int) Math.ceil(percentage);
-                                        course.setPercentage(result);
-
-                                        courseAdp.notifyDataSetChanged();
                                     }
-                                } else {
-                                    Log.d("QUERY3", "Error: " + e.getMessage());
+
+                                    double percentage = (14d - course.getTotalWeek()) * 100 / 14;
+                                    int result = (int) Math.ceil(percentage);
+                                    course.setPercentage(result);
+                                    courseAdp.notifyDataSetChanged();
+
                                 }
                             }
                         });

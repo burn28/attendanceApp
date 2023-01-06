@@ -190,6 +190,7 @@ public class StudentAttendance extends Fragment {
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         turnOnGPS();
+        showOptDialog();
 //        getLocation();
         return view;
     }
@@ -489,7 +490,6 @@ public class StudentAttendance extends Fragment {
         final String[] opt = {"Sick Leave", "Programme Leave", "Others"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Choose Reason");
-
         AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());
         builder1.setTitle("State your reason");
         final EditText input = new EditText(getContext());

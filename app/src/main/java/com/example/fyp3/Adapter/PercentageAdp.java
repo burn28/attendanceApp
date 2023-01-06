@@ -15,19 +15,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.fyp3.Fragment.AbsentDetails;
 import com.example.fyp3.Fragment.LecturerAttendance;
 import com.example.fyp3.Model.AttendanceClass;
+import com.example.fyp3.Model.AttendanceClassNew;
+import com.example.fyp3.Model.StudentClass;
 import com.example.fyp3.R;
+import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PercentageAdp extends RecyclerView.Adapter<PercentageAdp.ViewHolder> {
 
     public Context mContext;
     public List<AttendanceClass> mPercentList;
+    public List<AttendanceClassNew> mPercentList2;
+
     View view;
 
-    public PercentageAdp(Context mContext, List<AttendanceClass> mPercentList) {
+    public PercentageAdp(Context mContext, List<AttendanceClassNew> mPercentList2) {
         this.mContext = mContext;
-        this.mPercentList = mPercentList;
+        this.mPercentList2 = mPercentList2;
     }
 
     @NonNull
@@ -39,17 +45,26 @@ public class PercentageAdp extends RecyclerView.Adapter<PercentageAdp.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        AttendanceClass student = mPercentList.get(position);
+
+
+        AttendanceClassNew student = mPercentList2.get(position);
+
         holder.name.setText(student.getStudentName());
         holder.id.setText(student.getStudentId());
         holder.percent.setText(student.getPercentage() + "%");
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Gson gson = new Gson();
+                List<String> absentWeek = new ArrayList<>();
+                absentWeek = student.getWeeks();
+                String json = gson.toJson(absentWeek);
+
                 SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
                 editor.putString("studentId", student.getStudentId());
                 editor.putString("studentName", student.getStudentName());
                 editor.putInt("percentage", student.getPercentage());
+                editor.putString("weeks", json);
                 editor.apply();
                 ((FragmentActivity) mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                 new AbsentDetails())
@@ -62,7 +77,7 @@ public class PercentageAdp extends RecyclerView.Adapter<PercentageAdp.ViewHolder
 
     @Override
     public int getItemCount() {
-        return mPercentList.size();
+        return mPercentList2.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

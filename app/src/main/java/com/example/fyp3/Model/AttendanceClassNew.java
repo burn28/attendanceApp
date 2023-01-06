@@ -62,8 +62,8 @@ public class AttendanceClassNew {
         return weeks;
     }
 
-    public void setWeeks(List<String> weeks) {
-        this.weeks = weeks;
+    public void setWeeks(String weeks) {
+        this.weeks.add(weeks);
     }
 
     public Integer getTotalWeek() {

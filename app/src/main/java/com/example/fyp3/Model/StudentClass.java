@@ -1,6 +1,7 @@
 package com.example.fyp3.Model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class StudentClass {
@@ -11,15 +12,12 @@ public class StudentClass {
     private String name;
     private String startTime;
     private String endTime;
-
-
-    //    private String studentId;
     private String week;
     private String day;
-    //    private String status;
     private List<String> weeks = new ArrayList<>();
     private Integer totalWeek = 0;
     private Integer percentage = 100;
+    private HashMap<String,String> status = new HashMap<>();
 
     public StudentClass(String courseId, String week, String title, Integer totalWeek, Integer percentage, String day) {
         this.courseId = courseId;
@@ -32,6 +30,14 @@ public class StudentClass {
 
     public StudentClass() {
 
+    }
+
+    public String getStatus(String key) {
+        return this.status.get(key);
+    }
+
+    public void setStatus(String week, String status) {
+        this.status.put(week,status);
     }
 
     public String getId() {
