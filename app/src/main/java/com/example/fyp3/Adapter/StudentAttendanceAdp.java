@@ -53,6 +53,7 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.putString("courseTitle", mClass.getTitle());
                 editor.putString("record","present");
                 editor.putString("startTime",mClass.getStartTime());
+                editor.putString("endTime", mClass.getEndTime());
                 editor.apply();
                 byte[] data = null;
                 fragment.loadingDialog.startLoadingDialog(fragment.getLayoutInflater());
@@ -68,6 +69,7 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.putString("courseTitle", mClass.getTitle());
                 editor.putString("record","absent");
                 editor.putString("startTime",mClass.getStartTime());
+                editor.putString("endTime", mClass.getEndTime());
                 editor.apply();
                 byte[] data = null;
 //                fragment.chooseFile();

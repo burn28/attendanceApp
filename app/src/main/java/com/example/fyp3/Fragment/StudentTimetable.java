@@ -169,14 +169,14 @@ public class StudentTimetable extends Fragment {
         fridayList.add(Friday8);
         fridayList.add(Friday9);
 
-        colorMap.put("SKJ4272","#9033CC");
-        colorMap.put("QQQ2111","#4378DB");
-        colorMap.put("SKJ4213","#d13a2e");
-        colorMap.put("UTU3012","#F2BF40");
-        colorMap.put("SKJ4183","#21de80");
-        colorMap.put("SKM3013","#DA9725");
-        colorMap.put("SKJ4284","#2568da");
-        colorMap.put("SKJ4301", "#bc4390");
+        colorMap.put("SKJ4193","#9033CC");
+        colorMap.put("SKJ4284","#4378DB");
+        colorMap.put("SKJ4301","#d13a2e");
+        colorMap.put("SKJ4323","#F2BF40");
+        colorMap.put("SKJ4333","#21de80");
+//        colorMap.put("SKM3013","#DA9725");
+//        colorMap.put("SKJ4284","#2568da");
+//        colorMap.put("SKJ4301", "#bc4390");
 
         getEnrollment();
         return view;
@@ -184,7 +184,7 @@ public class StudentTimetable extends Fragment {
 
     public void getEnrollment() {
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Enrolment");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Enrollment");
         query.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override

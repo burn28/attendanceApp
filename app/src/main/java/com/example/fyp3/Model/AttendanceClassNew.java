@@ -58,6 +58,10 @@ public class AttendanceClassNew {
 //        this.status = status;
     }
 
+    public HashMap<String, String> getStatusMap(){
+        return status;
+    }
+
     public List<String> getWeeks() {
         return weeks;
     }

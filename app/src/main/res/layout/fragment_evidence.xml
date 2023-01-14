@@ -64,6 +64,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/relativeLayout" />
 
+    <Button
+        android:id="@+id/downloadBtn"
+        android:text="Download Evidence"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/relativeLayout"
+        />
+
     <TextView
         android:id="@+id/textView3"
         android:layout_margin="10dp"
@@ -78,7 +88,7 @@
 
     <Button
         android:id="@+id/delBtn"
-        android:text="Tick as attend"
+        android:text="Tick as present"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"

@@ -83,11 +83,11 @@ public class StudentHome extends Fragment {
         weekText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showList();
+
             }
         });
 
-
+        showList();
 
 
         return view;
@@ -95,7 +95,7 @@ public class StudentHome extends Fragment {
 
 
     private void showList() {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Enrolment");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Enrollment");
         query.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
@@ -118,7 +118,6 @@ public class StudentHome extends Fragment {
                                         course.setTitle(obj.getString("title"));
                                     }
                                     courseAdp.notifyDataSetChanged();
-
                                 } else {
                                     Log.d("INNER", "Error: " + e.getMessage());
                                 }
@@ -150,55 +149,24 @@ public class StudentHome extends Fragment {
                             @Override
                             public void done(ParseObject object, ParseException e) {
                                 if (e == null) {
-                                    course.setTotalWeek(course.getTotalWeek() + 1);
                                     for (int j = 1; j <= Integer.parseInt(currentWeek); j++) {
                                         course.setStatus("week" + j, object.getString("week" + j));
                                         if (!Objects.equals(object.getString("week" + j), "present")) {
                                             course.setTotalWeek(course.getTotalWeek() + 1);
+                                            course.setWeeks(String.valueOf(j));
                                         }
                                     }
-
                                     double percentage = (14d - course.getTotalWeek()) * 100 / 14;
                                     int result = (int) Math.ceil(percentage);
                                     course.setPercentage(result);
                                     courseAdp.notifyDataSetChanged();
-
                                 }
                             }
                         });
-
-
                     }
-//                    for (StudentClass course : courseList) {
-//                        ParseQuery<ParseObject> query3 = ParseQuery.getQuery(course.getCourseId());
-//                        query3.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
-//                        query3.findInBackground(new FindCallback<ParseObject>() {
-//                            @Override
-//                            public void done(List<ParseObject> objects, ParseException e) {
-//                                if (e == null) {
-//                                    if (!objects.isEmpty()) {
-//                                        for (ParseObject obj : objects) {
-//                                            course.setWeeks(obj.getString("week"));
-//                                            course.setTotalWeek(course.getTotalWeek() + 1);
-//                                        }
-//                                        double percentage = (14d - course.getTotalWeek()) * 100 / 14;
-//                                        int result = (int) Math.ceil(percentage);
-//                                        course.setPercentage(result);
-//                                        if(!courseList.contains(null)){
-//                                            courseAdp.notifyDataSetChanged();
-//                                        }
-//                                    }
-//
-//                                } else {
-//                                    Log.d("QUERY3", "Error: " + e.getMessage());
-//                                }
-//                            }
-//                        });
-//                    }
                 } else {
                     Log.d("OUTER", "Error: " + e.getMessage());
                 }
-
             }
         });
     }

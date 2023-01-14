@@ -12,16 +12,14 @@ public class StudentClass {
     private String name;
     private String startTime;
     private String endTime;
-    private String week;
     private String day;
     private List<String> weeks = new ArrayList<>();
     private Integer totalWeek = 0;
     private Integer percentage = 100;
     private HashMap<String,String> status = new HashMap<>();
 
-    public StudentClass(String courseId, String week, String title, Integer totalWeek, Integer percentage, String day) {
+    public StudentClass(String courseId, String title, Integer totalWeek, Integer percentage, String day) {
         this.courseId = courseId;
-        this.week = week;
         this.title = title;
         this.totalWeek = totalWeek;
         this.day = day;
@@ -72,13 +70,6 @@ public class StudentClass {
         this.title = title;
     }
 
-    public String getWeek() {
-        return week;
-    }
-
-    public void setWeek(String week) {
-        this.week = week;
-    }
 
     public List<String> getWeeks() {
         return weeks;

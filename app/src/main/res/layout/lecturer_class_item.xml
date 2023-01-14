@@ -65,7 +65,7 @@
         android:layout_marginStart="5dp"
         android:background="@drawable/corner_bg"
         android:backgroundTint="#405DB5"
-        android:src="@drawable/ic_cross"
+        android:src="@drawable/ic_arrow"
         android:layout_gravity="end"
         android:contentDescription="Cancel class"/>
 

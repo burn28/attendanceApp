@@ -36,6 +36,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -87,12 +88,15 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.PolyUtil;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -163,8 +167,8 @@ public class StudentAttendance extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
-        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
-//        day = "Tuesday";
+//        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+        day = "Tuesday";
         time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 //        Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
 //        day = "Wednesday";
@@ -190,15 +194,14 @@ public class StudentAttendance extends Fragment {
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         turnOnGPS();
-        showOptDialog();
+//        showOptDialog();
 //        getLocation();
         return view;
     }
 
-
     private void showList() {
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Enrolment");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Enrollment");
         query.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
@@ -223,6 +226,8 @@ public class StudentAttendance extends Fragment {
                                             mClass.setTitle(obj.getString("title"));
                                             mClass.setDay(day);
                                             mClass.setStartTime(obj.getString("startTime"));
+                                            mClass.setEndTime(obj.getString("endTime"));
+
                                             classList.add(mClass);
 //                                            Toast.makeText(getContext(), course, Toast.LENGTH_SHORT).show();
                                         }
@@ -288,28 +293,40 @@ public class StudentAttendance extends Fragment {
         SharedPreferences.Editor editor = pref.edit();
         String action = pref.getString("record", null);
         String courseId = pref.getString("courseId", null);
-        String courseTitle = pref.getString("courseTitle", null);
+        String courseTitle = pref.getString("title", null);
         String start = pref.getString("startTime", null);
+        String end = pref.getString("endTime", null);
 
 
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         Date currentTime = null;
         Date startTime = null;
+        Date endTime = null;
+
         try {
             currentTime = format.parse(time);
             startTime = format.parse(start);
+            endTime = format.parse(end);
         } catch (java.text.ParseException e) {
             e.printStackTrace();
         }
 //        Log.d("END", "D:"+currentTime);
         long mills = currentTime.getTime() - startTime.getTime();
-        int diff = (int) (mills / (1000 * 60 * 60));
+        int diffStart = (int) (mills / (1000 * 60 * 60));
 
-        if (diff < 0) {
+        long mills2 = currentTime.getTime() - endTime.getTime();
+        int diffEnd = (int) (mills2 / (1000 * 60 * 60));
+
+
+        if (diffStart < 0) {
             Toast.makeText(getContext(), "Class has not started yet!", Toast.LENGTH_SHORT).show();
             Log.e("NOTI", "start: " + startTime + " current:" + currentTime);
-            Log.e("NOTI", "diff" + diff);
-        } else {
+            Log.e("NOTI", "diff" + diffStart);
+        } else if (diffEnd > 0){
+            Toast.makeText(getContext(), "Class was finished!", Toast.LENGTH_SHORT).show();
+            Log.e("NOTI", "end: " + endTime + " current:" + currentTime);
+            Log.e("NOTI", "diff" + diffEnd);
+        }else {
             Gson gson = new Gson();
             StudentClass Class = new StudentClass();
             Class.setCourseId(courseId);
@@ -321,46 +338,110 @@ public class StudentAttendance extends Fragment {
             editor.putString("done_class", json);
             editor.apply();
 
-            if (action.equals("absent")) {
-                Log.e("CourseId",courseId);
-                Log.e("student",ParseUser.getCurrentUser().getUsername());
-                Log.e("week",week);
-                ParseObject parseObject = new ParseObject(courseId);
-                parseObject.put("studentId", ParseUser.getCurrentUser().getUsername());
-                parseObject.put("week", week);
-                if(reason != null){
-                    parseObject.put("reason", reason);
-                    parseObject.saveInBackground();
-                    Toast.makeText(getContext(), "Record save successfully.", Toast.LENGTH_SHORT).show();
-                }
-                else if (fileByte.length != 0) {
-                    ParseFile file = new ParseFile(finalFile.getName(), fileByte);
-                    file.saveInBackground(new SaveCallback() {
-                        @Override
-                        public void done(ParseException e) {
-                            if(e == null){
-                                parseObject.put("evidence", file);
-                                parseObject.saveInBackground(new SaveCallback() {
+            String studentId = ParseUser.getCurrentUser().getUsername();
 
-                                    @Override
-                                    public void done(ParseException e) {
-                                        if(e == null){
-                                            Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
-                                            confirmBtn.setVisibility(GONE);
-                                        }else {
-                                            Log.e("parse", e.getMessage());
-                                            e.printStackTrace();
-                                        }
+//            if (action.equals("absent")) {
+//                Log.e("CourseId", courseId);
+//                Log.e("student", ParseUser.getCurrentUser().getUsername());
+//                Log.e("week", week);
+//
+//
+//                ParseObject parseObject = new ParseObject(courseId);
+//                parseObject.put("studentId", ParseUser.getCurrentUser().getUsername());
+//                parseObject.put("week", week);
+//                if (reason != null) {
+//                    parseObject.put("reason", reason);
+//                    parseObject.saveInBackground();
+//                    Toast.makeText(getContext(), "Record save successfully.", Toast.LENGTH_SHORT).show();
+//                } else if (fileByte.length != 0) {
+//                    ParseFile file = new ParseFile(finalFile.getName(), fileByte);
+//                    file.saveInBackground(new SaveCallback() {
+//                        @Override
+//                        public void done(ParseException e) {
+//                            if (e == null) {
+//                                parseObject.put("evidence", file);
+//                                parseObject.saveInBackground(new SaveCallback() {
+//                                    @Override
+//                                    public void done(ParseException e) {
+//                                        if (e == null) {
+//                                            Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+//                                            confirmBtn.setVisibility(GONE);
+//                                        } else {
+//                                            Log.e("parse", e.getMessage());
+//                                            e.printStackTrace();
+//                                        }
+//                                    }
+//                                });
+//                            } else {
+//                                Log.e("parseFile", e.getMessage());
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
+//                }
+//            }
+            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
+            query.whereEqualTo("studentId", studentId);
+            query.getFirstInBackground(new GetCallback<ParseObject>() {
+                @Override
+                public void done(ParseObject object, ParseException e) {
+                    if(action.equals("present")){
+                        object.put("week"+week, "present");
+                        object.saveInBackground();
+                    }else{
+                        if(reason!=null){
+                            ParseObject parseObject = new ParseObject("reason");
+                            parseObject.put("sentence",reason);
+                            parseObject.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if(e==null){
+                                        String objectId = parseObject.getObjectId();
+                                        object.put("week"+week, objectId);
+                                        object.saveInBackground();
+                                        Toast.makeText(getContext(), "Record save successfully.", Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        e.printStackTrace();
                                     }
-                                });
-                            }else {
-                                Log.e("parseFile", e.getMessage());
-                                e.printStackTrace();
-                            }
+
+                                }
+                            });
+                        } else if (fileByte.length != 0){
+                            String extension = FilenameUtils.getExtension(finalFile.getName());
+                            Log.e("file", extension);
+                            ParseFile file = new ParseFile(ParseUser.getCurrentUser().getUsername()+"."+extension, fileByte);
+                            file.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if (e == null) {
+                                        ParseObject evidence = new ParseObject("reason");
+                                        evidence.put("document", file);
+                                        evidence.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                if (e == null) {
+                                                    String objectId = evidence.getObjectId();
+                                                    object.put("week"+week, objectId);
+                                                    object.saveInBackground();
+                                                    Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                                                    confirmBtn.setVisibility(GONE);
+                                                } else {
+                                                    Log.e("parse", e.getMessage());
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        Log.e("parseFile", e.getMessage());
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
                         }
-                    });
+                    }
+
                 }
-            }
+            });
 //            else if(action.equals("present")){
 //
 //            }
@@ -368,12 +449,12 @@ public class StudentAttendance extends Fragment {
         }
     }
 
-    public void askLocationPermission(){
+    public void askLocationPermission() {
         ActivityCompat.requestPermissions((Activity) getContext(), new String[]
                 {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
     }
 
-    public void turnOnGPS(){
+    public void turnOnGPS() {
         LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
                 .setMinUpdateIntervalMillis(3000).build();
         LocationSettingsRequest.Builder locationSetting = new LocationSettingsRequest.Builder();
@@ -391,9 +472,9 @@ public class StudentAttendance extends Fragment {
         task.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.e("LSR", "Fail:"+e);
+                Log.e("LSR", "Fail:" + e);
                 e.printStackTrace();
-                if(e instanceof ResolvableApiException){
+                if (e instanceof ResolvableApiException) {
                     ResolvableApiException resolvableApiException = (ResolvableApiException) e;
                     try {
                         resolvableApiException.startResolutionForResult(getActivity(), REQUEST_CHECK_SETTINGS);
@@ -433,7 +514,7 @@ public class StudentAttendance extends Fragment {
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 //            Toast.makeText(getContext(), "getLocation", Toast.LENGTH_SHORT).show();
 
-            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 Toast.makeText(getContext(), "Please turn On GPS", Toast.LENGTH_SHORT).show();
             }
             fusedLocationProviderClient.getLastLocation()
@@ -445,25 +526,25 @@ public class StudentAttendance extends Fragment {
                                 List<Address> addresses = null;
                                 try {
                                     addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                                    double latitude = addresses.get(0).getLatitude();
-                                    double longitude = addresses.get(0).getLongitude();
-//                                    double latitude = 2.8518691171806414;
-//                                    double longitude = 101.7680472556706;
-                                    Log.e("GPS", "latitude: "+ addresses.get(0).getLatitude());
-                                    Log.e("GPS", "longitude: "+ addresses.get(0).getLongitude());
-                                    Log.e("GPS", "address: "+ addresses.get(0).getAddressLine(0));
-                                    Log.e("GPS", "city: "+ addresses.get(0).getLocality());
-                                    Log.e("GPS", "country: "+ addresses.get(0).getCountryName());
+//                                    double latitude = addresses.get(0).getLatitude();
+//                                    double longitude = addresses.get(0).getLongitude();
+                                    double latitude = 2.8518691171806414;
+                                    double longitude = 101.7680472556706;
+                                    Log.e("GPS", "latitude: " + addresses.get(0).getLatitude());
+                                    Log.e("GPS", "longitude: " + addresses.get(0).getLongitude());
+                                    Log.e("GPS", "address: " + addresses.get(0).getAddressLine(0));
+                                    Log.e("GPS", "city: " + addresses.get(0).getLocality());
+                                    Log.e("GPS", "country: " + addresses.get(0).getCountryName());
 //                                    Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
-                                    boolean isWithin1 = PolyUtil.containsLocation(latitude, longitude,polygonPts,true);
-                                    boolean isWithin2 = PolyUtil.containsLocation(latitude, longitude,polygonPts2,true);
+                                    boolean isWithin1 = PolyUtil.containsLocation(latitude, longitude, polygonPts, true);
+                                    boolean isWithin2 = PolyUtil.containsLocation(latitude, longitude, polygonPts2, true);
 
-                                    if (isWithin1 || isWithin2){
+                                    if (isWithin1 || isWithin2) {
                                         Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
                                         Toast.makeText(getContext(), "Within the area", Toast.LENGTH_SHORT).show();
                                         byte[] bytes = new byte[0];
-//                                        recordAttendance(bytes);
-                                    }else{
+                                        recordAttendance(bytes);
+                                    } else {
                                         Toast.makeText(getContext(), "Not within", Toast.LENGTH_SHORT).show();
                                     }
                                 } catch (IOException e) {
@@ -471,22 +552,20 @@ public class StudentAttendance extends Fragment {
                                 }
                                 loadingDialog.dismissDialog();
 
-                            }else{
+                            } else {
 //                                Toast.makeText(getContext(), "getLocation: NULL", Toast.LENGTH_SHORT).show();
                                 getLocation();
                             }
                         }
                     });
-        }
-        else {
+        } else {
             askLocationPermission();
         }
 
     }
 
 
-
-    public void showOptDialog(){
+    public void showOptDialog() {
         final String[] opt = {"Sick Leave", "Programme Leave", "Others"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Choose Reason");
@@ -523,11 +602,11 @@ public class StudentAttendance extends Fragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 //                selectedOpt = opt[i];
-                if(selectedOpt.equals("Sick Leave") || selectedOpt.equals("Programme Leave")){
+                if (selectedOpt.equals("Sick Leave") || selectedOpt.equals("Programme Leave")) {
                     dialogInterface.dismiss();
 
                     chooseFile();
-                }else{
+                } else {
                     //popup to fill the reason
                     dialogInterface.dismiss();
                     builder1.create().show();
@@ -544,16 +623,14 @@ public class StudentAttendance extends Fragment {
         builder.show();
     }
 
-    public void chooseFile(){
+    public void chooseFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
 //        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,28);
+        startActivityForResult(intent, 28);
 
     }
-
-
 
 
     @Override
@@ -578,15 +655,15 @@ public class StudentAttendance extends Fragment {
 //        }else if (resultCode == ImagePicker.RESULT_ERROR) {
 //            Toast.makeText(getContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
 //        }
-        if(requestCode == 28){
-            if (resultCode == RESULT_OK){
-                if(data == null){
+        if (requestCode == 28) {
+            if (resultCode == RESULT_OK) {
+                if (data == null) {
                     return;
-                }else{
+                } else {
                     Uri u = data.getData();
 //                    String path = getFilePath(data);
                     try {
-                        finalFile = FileUtil.from(getContext(),data.getData());
+                        finalFile = FileUtil.from(getContext(), data.getData());
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -595,18 +672,18 @@ public class StudentAttendance extends Fragment {
 //                    finalFile = new File(data.getData().getPath());
                     Log.e("Result: ", data.getData().toString());
 //                    recordAttendance(getBytes(data.getData()));
-                    if(finalFile!=null){
-                        Log.e("FILE","NOT NULL");
+                    if (finalFile != null) {
+                        Log.e("FILE", "NOT NULL");
                         confirmBtn.setVisibility(View.VISIBLE);
-                    }else {
-                        Log.e("FILE","NULL");
+                    } else {
+                        Log.e("FILE", "NULL");
                     }
                 }
             }
         }
     }
 
-    public String getFilePath(Intent data){
+    public String getFilePath(Intent data) {
         Uri selectedFileUri = data.getData();
         File file = new File(selectedFileUri.getPath());
         String[] split = file.getPath().split(":");
@@ -618,7 +695,7 @@ public class StudentAttendance extends Fragment {
 
 
     //get image byte[] to save into cloud db
-    public byte[] getBytes(String imagePath){
+    public byte[] getBytes(String imagePath) {
 //        //Only decode image size. Not whole image
 //        BitmapFactory.Options option = new BitmapFactory.Options();
 //        option.inJustDecodeBounds = true;
@@ -644,7 +721,7 @@ public class StudentAttendance extends Fragment {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         bitmap.recycle();
-        Log.e("Pic","getByte");
+        Log.e("Pic", "getByte");
 
         return stream.toByteArray();
     }

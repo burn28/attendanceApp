@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import com.example.fyp3.Model.AttendanceClass;
+import com.example.fyp3.Model.AttendanceClassNew;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
@@ -32,8 +33,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.InterruptedByTimeoutException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class ExcelUtils {
@@ -55,7 +58,7 @@ public class ExcelUtils {
 //    private static int currentWeek;
 
     public static boolean exportDataIntoWorkbook(Context context, String fileName,
-                                                 List<AttendanceClass> dataList, Integer currentWeek) {
+                                                 List<AttendanceClassNew> dataList, Integer currentWeek) {
         boolean isWorkbookWrittenIntoStorage;
 
         // Check if available and not read only
@@ -76,8 +79,8 @@ public class ExcelUtils {
         sheet.setColumnWidth(2, (15 * 400));
         sheet.setColumnWidth(3, (15 * 400));
 
-        setHeaderRow(currentWeek);
-        fillDataIntoExcel(dataList, currentWeek);
+        setHeaderRow(14);
+        fillDataIntoExcel(dataList, 14);
         isWorkbookWrittenIntoStorage = storeExcelInStorage(context, fileName);
 
         return isWorkbookWrittenIntoStorage;
@@ -139,10 +142,10 @@ public class ExcelUtils {
         cell.setCellStyle(setHeaderCellStyle());
 
 
-        int j=3;
-        for(int i=1; i<=currentWeek ; i++){
+        int j = 3;
+        for (int i = 1; i <= 14; i++) {
             cell = headerRow.createCell(j);
-            cell.setCellValue("week "+i);
+            cell.setCellValue("week " + i);
             cell.setCellStyle(setHeaderCellStyle());
             j++;
         }
@@ -156,7 +159,7 @@ public class ExcelUtils {
      *
      * @param dataList - List containing data to be filled into excel
      */
-    private static void fillDataIntoExcel(List<AttendanceClass> dataList, Integer currentWeek) {
+    private static void fillDataIntoExcel(List<AttendanceClassNew> dataList, Integer currentWeek) {
         XSSFCellStyle presentStyle = workbook.createCellStyle();
         presentStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
         presentStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -171,6 +174,13 @@ public class ExcelUtils {
         absentStyle.setBorderBottom(BorderStyle.THIN);
         absentStyle.setBorderLeft(BorderStyle.THIN);
         absentStyle.setBorderRight(BorderStyle.THIN);
+        XSSFCellStyle noRecordStyle = workbook.createCellStyle();
+        noRecordStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+        noRecordStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        noRecordStyle.setBorderTop(BorderStyle.THIN);
+        noRecordStyle.setBorderBottom(BorderStyle.THIN);
+        noRecordStyle.setBorderLeft(BorderStyle.THIN);
+        noRecordStyle.setBorderRight(BorderStyle.THIN);
         XSSFCellStyle defaultStyle = workbook.createCellStyle();
         defaultStyle.setBorderTop(BorderStyle.THIN);
         defaultStyle.setBorderBottom(BorderStyle.THIN);
@@ -191,65 +201,61 @@ public class ExcelUtils {
             cell = rowData.createCell(2);
             cell.setCellValue(dataList.get(i).getPercentage());
 
-            List<String> week = dataList.get(i).getWeek();
-//            List<Integer> weekInt = new ArrayList<>();
-//            for(String s : week)
-//            {
-//                weekInt.add(Integer.valueOf(s));
-//            }
+//            List<String> week = dataList.get(i).getWeek();
+            HashMap<String, String> weekMap = dataList.get(i).getStatusMap();
 
-//            Collections.sort(week);
-//            Collections.reverse(week);
+//            if(week.isEmpty()){
+//                for(int j=3; j<currentWeek+3; j++){
+//                    cell = rowData.createCell(j);
+//                    cell.setCellValue("P");
+//                    cell.setCellStyle(presentStyle);
+//                }
+//            }else{
 
-
-            if(week.isEmpty()){
-                for(int j=3; j<currentWeek+3; j++){
-                    cell = rowData.createCell(j);
+//                for(int j=1; j<=currentWeek; j++){
+//                    for(int x=0; x<week.size(); x++){
+//                        if(week.get(x).equals(String.valueOf(j))){
+//                            cell = rowData.createCell(y);
+//                            cell.setCellValue("A");
+//                            cell.setCellStyle(absentStyle);
+//                            break;
+//                        }else {
+//                            cell = rowData.createCell(y);
+//                            cell.setCellValue("P");
+//                            cell.setCellStyle(presentStyle);
+//                        }
+//                    }
+//                    y++;
+//                }
+            int y = 3;
+            List<String> keyList = new ArrayList<String>(weekMap.keySet());
+            int diff = 14 - keyList.size();
+            for (int j = 0; j < weekMap.size(); j++) {
+                String key = keyList.get(j);
+                String status = weekMap.get(key);
+                if (status.equals("present")) {
+                    cell = rowData.createCell(y);
                     cell.setCellValue("P");
                     cell.setCellStyle(presentStyle);
+                } else if (status.equals("no record")) {
+                    cell = rowData.createCell(y);
+                    cell.setCellValue("NO");
+                    cell.setCellStyle(noRecordStyle);
+                } else {
+                    cell = rowData.createCell(y);
+                    cell.setCellValue("A");
+                    cell.setCellStyle(absentStyle);
                 }
-            }else{
-                int y=3;
-                for(int j=1; j<=currentWeek; j++){
-                    for(int x=0; x<week.size(); x++){
-                        if(week.get(x).equals(String.valueOf(j))){
-                            cell = rowData.createCell(y);
-                            cell.setCellValue("A");
-                            cell.setCellStyle(absentStyle);
-                            break;
-                        }else {
-                            cell = rowData.createCell(y);
-                            cell.setCellValue("P");
-                            cell.setCellStyle(presentStyle);
-                        }
-                    }
-                    y++;
-                }
+                y++;
 
-//                int y=3;
-//                for(int j=0; j<week.size(); j++){
-//                    for(int x=1; x<=currentWeek; x++){
-//                        int b = Integer.parseInt(week.get(j));
-//                        Log.e(TAG, "B: "+b);
-//                        if(week.get(j).contains("1"))
-//                        if(Integer.parseInt(week.get(j)) <= x){
-//                            if(week.get(j).equals(String.valueOf(x))){
-//                                cell = rowData.createCell(y);
-//                                cell.setCellValue("A");
-//                                cell.setCellStyle(absentStyle);
-//                                Log.d(TAG, "absent");
-//                            }else {
-//                                cell = rowData.createCell(y);
-//                                cell.setCellValue("P");
-//                                cell.setCellStyle(presentStyle);
-////                                break;
-//                            }
-//                        }
-//                        y++;
-//                    }
-//                }
             }
+            for (int j = 0; j < diff; j++) {
+                cell = rowData.createCell(y);
+                cell.setCellValue("NO");
+                cell.setCellStyle(noRecordStyle);
+                y++;
 
+            }
 
         }
     }
@@ -266,7 +272,7 @@ public class ExcelUtils {
 
 //        File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName+".xlsx");
         File[] root = new File[0];
-        String dir="";
+        String dir = "";
         root = context.getExternalMediaDirs();
 
         for (File value : root) {
@@ -278,13 +284,35 @@ public class ExcelUtils {
         }
 
 //        File file = new File(dir+"/"+fileName+".xlsx");
-        File file = new File("/storage/emulated/0/Download/"+fileName+".xlsx");
+//        File file = new File("/storage/emulated/0/Download/"+fileName+".xlsx");
         FileOutputStream fileOutputStream = null;
+
+        File direct = new File(Environment.getExternalStorageDirectory() + "/Download/Student Attendance");
+        if (!direct.exists()) {
+            if (direct.mkdir()) {
+                //directory is created;
+                Log.e("FILE", "MKDIR");
+            } else {
+                try {
+                    //create dir
+                    Files.createDirectory(direct.toPath());
+                } catch (IOException e) {
+                    Log.e("FILE", "EXCEPTION");
+                    e.printStackTrace();
+                    Log.e("FILE", "RETURN");
+
+                }
+            }
+        }
+        File file = new File(direct, fileName + "." + "xlsx");
 
 
         try {
-            fileOutputStream = new FileOutputStream(file);
-            workbook.write(fileOutputStream);
+//            fileOutputStream = new FileOutputStream(file);
+//            workbook.write(fileOutputStream);
+            FileOutputStream fos = new FileOutputStream(file);
+            workbook.write(fos);
+            fos.close();
             Log.e(TAG, "Writing file " + file);
             isSuccess = true;
         } catch (IOException e) {

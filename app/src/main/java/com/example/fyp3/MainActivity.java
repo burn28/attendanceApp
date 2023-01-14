@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        week = pref.getString("week", "1");
-        sDate = "12/12/2022";
+        sDate = "17/10/2022";
         String currentDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
 //        String currentDate = "21/11/2022";
 
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         idInput = findViewById(R.id.edittextID);
         passwordInput = findViewById(R.id.edittextPass);
         signIn = findViewById(R.id.signinBtn);
-        register = findViewById(R.id.registerBtn);
+//        register = findViewById(R.id.registerBtn);
 
 
         student.setOnClickListener(new View.OnClickListener() {
@@ -108,13 +108,13 @@ public class MainActivity extends AppCompatActivity {
                 Login();
             }
         });
-        register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, com.example.fyp3.register.class);
-                startActivity(i);
-            }
-        });
+//        register.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent i = new Intent(MainActivity.this, com.example.fyp3.register.class);
+//                startActivity(i);
+//            }
+//        });
     }
 
 
@@ -142,6 +142,9 @@ public class MainActivity extends AppCompatActivity {
                             }
                         } else {
                             ParseUser.logOut();
+                            Log.e("Parse", e.getMessage());
+                            e.printStackTrace();
+
                             Toast.makeText(MainActivity.this, "Login Failed!: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }

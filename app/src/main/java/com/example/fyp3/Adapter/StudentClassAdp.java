@@ -71,7 +71,7 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
             public void onClick(View view) {
                 SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
                 editor.putString("courseId",Class.getCourseId());
-                editor.putString("courseTitle",Class.getTitle());
+                editor.putString("title",Class.getCourseId()+" "+Class.getTitle());
                 editor.putInt("percentage", Class.getPercentage());
 
                 Gson gson = new Gson();

@@ -3,8 +3,8 @@
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
 
     <!-- Change BOTH strings as required -->
-    <string name="back4app_app_id">YxAhfuXmA6GRhiFnLtaRVqZ2YJ6OgVnJDBYBt8HE</string>
-    <string name="back4app_client_key">l7fRSiFISrGmKnwOvDj2D1kCNEtgCXbkZIJY2AmO</string>
+    <string name="back4app_app_id">URBkLu6Hfz3zndE6wg1NCDriCKu8ue3LMHxf1wIC</string>
+    <string name="back4app_client_key">MBa9C5vMg1fpL6A2QwGmDOGOyG4Xqz61gBwDEUR4</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 

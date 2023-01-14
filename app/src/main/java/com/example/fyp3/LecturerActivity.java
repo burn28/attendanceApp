@@ -6,13 +6,19 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.fyp3.Fragment.LecturerAttendance;
 import com.example.fyp3.Fragment.LecturerHome;
+
+import java.io.File;
 
 public class LecturerActivity extends AppCompatActivity {
 
@@ -32,6 +38,19 @@ public class LecturerActivity extends AppCompatActivity {
         fragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, new LecturerHome())
                 .commit();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if(Environment.isExternalStorageManager())
+            {
+                File internal = new File(Environment.getExternalStorageDirectory() + "/Download/Student Attendance");
+            }
+            else
+            {
+                Intent permissionIntent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(permissionIntent);
+            }
+        }
+
     }
 
     @Override

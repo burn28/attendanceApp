@@ -32,6 +32,7 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,6 +42,7 @@ import java.util.List;
 
 public class Evidence extends Fragment {
 
+    TextView courseTitle;
     TextView reasonText;
     TextView weekText;
     TextView download;
@@ -49,6 +51,7 @@ public class Evidence extends Fragment {
     String week;
     String extension;
     Button delBtn;
+    Button downloadBtn;
 
     private static final int STORAGE_PERMISSION_CODE = 101;
 
@@ -62,10 +65,11 @@ public class Evidence extends Fragment {
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 STORAGE_PERMISSION_CODE);
 
-
+        courseTitle = view.findViewById(R.id.course);
         download = view.findViewById(R.id.textView2);
         reasonText = view.findViewById(R.id.textView3);
         delBtn = view.findViewById(R.id.delBtn);
+        downloadBtn = view.findViewById(R.id.downloadBtn);
 
         SharedPreferences pref = getContext().getSharedPreferences("PROOF", Context.MODE_PRIVATE);
         week = pref.getString("week", null);
@@ -73,12 +77,16 @@ public class Evidence extends Fragment {
         SharedPreferences preferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         courseId = preferences.getString("courseId", "");
         studentId = preferences.getString("studentId", "");
+        courseTitle.setText(preferences.getString("title",""));
 
         View includeLayout = view.findViewById(R.id.included);
         weekText = includeLayout.findViewById(R.id.textWeek);
-        weekText.setText("week "+week);
+        weekText.setText("week " + week);
+
 
         download.setVisibility(View.GONE);
+        downloadBtn.setVisibility(View.GONE);
+
         getReason();
 
         download.setOnClickListener(new View.OnClickListener() {
@@ -86,11 +94,26 @@ public class Evidence extends Fragment {
             public void onClick(View view) {
                 if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
                     Log.e("STORAGE", "Storage not available or read only");
-                }else{
+                } else {
                     getFile();
                 }
             }
         });
+        downloadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
+                    Log.e("STORAGE", "Storage not available or read only");
+                } else {
+                    getFile();
+                }
+            }
+        });
+        if(this.getActivity().getClass().getSimpleName().equals("StudentActivity")){
+            delBtn.setVisibility(View.GONE);
+        }else {
+            delBtn.setVisibility(View.VISIBLE);
+        }
         delBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,28 +124,43 @@ public class Evidence extends Fragment {
         return view;
     }
 
-    public void getReason(){
+    public void getTitle(){
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("course");
+        query.whereEqualTo("courseId", courseId);
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject object, ParseException e) {
+                if(e == null){
+                    String title = object.getString("title");
+                    courseTitle.setText(courseId+" "+ title);
+                }
+            }
+        });
+    }
+
+    public void getReason() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
         query.whereEqualTo("studentId", studentId);
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject object, ParseException e) {
-                String reasonId = object.getString("week"+week);
-                if(reasonId.equals("no record")){
+                String reasonId = object.getString("week" + week);
+                if (reasonId.equals("no record")) {
                     download.setVisibility(View.GONE);
                     reasonText.setText("no record");
-                }else {
+                } else {
                     ParseQuery<ParseObject> query = ParseQuery.getQuery("reason");
                     query.getInBackground(reasonId, new GetCallback<ParseObject>() {
                         @Override
                         public void done(ParseObject object, ParseException e) {
-                            if(e == null){
+                            if (e == null) {
                                 String sentence = object.getString("sentence");
-                                if(sentence!=null){
+                                if (sentence != null) {
                                     download.setVisibility(View.GONE);
                                     reasonText.setText(sentence);
-                                }else{
-                                    download.setVisibility(View.VISIBLE);
+                                } else {
+//                                    download.setVisibility(View.VISIBLE);
+                                    downloadBtn.setVisibility(View.VISIBLE);
                                 }
                             }
                         }
@@ -162,82 +200,112 @@ public class Evidence extends Fragment {
     }
 
 
-
-    public void getFile(){
+    public void getFile() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
         query.whereEqualTo("studentId", studentId);
-        query.whereEqualTo("week", week);
-
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject object, ParseException e) {
-                if(e == null){
-                    ParseFile file = (ParseFile) object.get("evidence");
-                    if(file == null){
-                        Toast.makeText(getContext(), "", Toast.LENGTH_SHORT).show();
-                    }
-                    file.getDataInBackground(new GetDataCallback() {
+                if (e == null) {
+                    String objectId = object.getString("week" + week);
+                    Log.e("ObjectID: ", objectId);
+                    ParseQuery<ParseObject> evidence = ParseQuery.getQuery("reason");
+                    evidence.getInBackground(objectId, new GetCallback<ParseObject>() {
                         @Override
-                        public void done(byte[] data, ParseException e) {
-                            Log.e("GETFILE","DONE");
-                            saveFile(data,studentId+"_"+"week"+week);
+                        public void done(ParseObject object, ParseException e) {
+                            if (e == null) {
+                                ParseFile file = (ParseFile) object.get("document");
+                                if (file == null) {
+                                    Toast.makeText(getContext(), "Failed!", Toast.LENGTH_SHORT).show();
+                                }
+                                file.getDataInBackground(new GetDataCallback() {
+                                    @Override
+                                    public void done(byte[] data, ParseException e) {
+                                        Log.e("GETFILE", "DONE");
+                                        extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+                                        saveFile(data, studentId + "_" + "week" + week);
+                                        Log.e("filename", file.getName());
+                                        Log.e("extension", extension);
+                                    }
+                                });
+
+                            }
+
                         }
                     });
 
-                     extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
-                    Log.e("URL", extension);
+                } else {
+                    Log.e("getFirst: ", e.getMessage());
+                    e.printStackTrace();
                 }
             }
         });
     }
 
-    public void saveFile(byte[] data, String filename){
-        Log.e("SAVEFILE","masuk");
-        File direct = new File(Environment.getExternalStorageDirectory()+"/Download/Student Attendance");
-        if(!direct.exists()) {
-            if(direct.mkdir()){
+    public void saveFile(byte[] data, String filename) {
+        Log.e("SAVEFILE", "masuk");
+        File direct = new File(Environment.getExternalStorageDirectory() + "/Download/Student Attendance");
+        if (!direct.exists()) {
+            if (direct.mkdir()) {
                 //directory is created;
-                Log.e("FILE","MKDIR");
-            }else{
+                Log.e("FILE", "MKDIR");
+            } else {
                 try {
                     //create dir
                     Files.createDirectory(direct.toPath());
                 } catch (IOException e) {
-                    Log.e("FILE","EXCEPTION");
-                    e.printStackTrace();Log.e("FILE","RETURN");
+                    Log.e("FILE", "EXCEPTION");
+                    e.printStackTrace();
+                    Log.e("FILE", "RETURN");
                     return;
                 }
             }
         }
-        File file = new File(direct, filename+"."+extension);
-        try{
+        File file = new File(direct, filename + "." + extension);
+        try {
             //save file
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(data);
             fos.close();
             Toast.makeText(getContext(), "File saved successfully", Toast.LENGTH_SHORT).show();
-            Log.e("FILE","COMPLETE");
-        }catch (Exception e){
+            Log.e("FILE", "COMPLETE");
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("File could not be saved.", e);
         }
     }
 
-    public void tickAttend(){
+    public void tickAttend() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
         query.whereEqualTo("studentId", studentId);
-        query.whereEqualTo("week", week);
-        query.getFirstInBackground(new GetCallback<ParseObject>() {
+//        query.whereEqualTo("week", week);
+//        query.getFirstInBackground(new GetCallback<ParseObject>() {
+//            @Override
+//            public void done(ParseObject object, ParseException e) {
+//                object.deleteInBackground();
+//                Toast.makeText(getContext(), "Change record successfully", Toast.LENGTH_SHORT).show();
+//                getParentFragmentManager().popBackStack();
+//            }
+//        });
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(ParseObject object, ParseException e) {
-                object.deleteInBackground();
-                Toast.makeText(getContext(), "Change record successfully", Toast.LENGTH_SHORT).show();
-                getParentFragmentManager().popBackStack();
+            public void done(List<ParseObject> objects, ParseException e) {
+                for (ParseObject obj : objects) {
+                    String setWeek = "week" + week;
+                    obj.put(setWeek, "present");
+                    obj.saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            Toast.makeText(getContext(), "Change record successfully", Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
+                        }
+                    });
+
+                }
             }
         });
 
     }
-
 
 
 //    public void getImage(){

@@ -43,6 +43,7 @@ public class AbsentDetails extends Fragment {
     private RecyclerView recyclerView;
     RecyclerView.LayoutManager linearLayoutManager;
     private com.example.fyp3.Adapter.AbsentWeekAdp absentWeekAdp;
+    String currentWeek;
 
 
     @Override
@@ -57,16 +58,19 @@ public class AbsentDetails extends Fragment {
         studentName = pref.getString("studentName", null);
         percentage = pref.getInt("percentage", -1);
         courseId = pref.getString("courseId", "");
-        courseTitle = courseId +" " + pref.getString("courseTitle", "");
+        courseTitle = pref.getString("title", "");
         courseText = view.findViewById(R.id.course);
         courseText.setText(courseTitle);
+
+        SharedPreferences pref2 = getActivity().getSharedPreferences("DATE", Context.MODE_PRIVATE);
+        currentWeek = pref2.getString("week", "1");
 
         View includeLayout = view.findViewById(R.id.included);
         studentIdText = includeLayout.findViewById(R.id.studentId);
         studentNameText = includeLayout.findViewById(R.id.studentName);
         percentageText = includeLayout.findViewById(R.id.percentage);
         cardView = includeLayout.findViewById(R.id.cardview);
-        includeLayout.startAnimation(AnimationUtils.loadAnimation(this.getContext(),R.anim.anim_fall_down));
+        includeLayout.startAnimation(AnimationUtils.loadAnimation(this.getContext(), R.anim.anim_fall_down));
 //        cardView.startAnimation(AnimationUtils.loadAnimation(this.getContext(),R.anim.anim_fall_down));
 
         studentIdText.setText(studentId);
@@ -98,32 +102,38 @@ public class AbsentDetails extends Fragment {
             absentWeekAdp.notifyDataSetChanged();
             recyclerView.setAdapter(absentWeekAdp);
         } else {
-//            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
-//            query.whereEqualTo("studentId", studentId);
-//            query.findInBackground(new FindCallback<ParseObject>() {
-//                @Override
-//                public void done(List<ParseObject> objects, ParseException e) {
-//                    if (e == null) {
-//                        weekList.clear();
-//                        for (ParseObject obj : objects) {
-//                            String week = obj.getString("week");
-//                            weekList.add(week);
-//                            absentWeekAdp.notifyDataSetChanged();
-//                        }
-//                    } else {
-//
-//                    }
-//                }
-//            });
-            weekList.clear();
-            Gson gson = new Gson();
-            String jsonText = pref.getString("weeks", null);
-            Type type = new TypeToken<ArrayList<String>>() {
-            }.getType();
-            weekList = gson.fromJson(jsonText, type);
-            absentWeekAdp = new AbsentWeekAdp(getContext(), weekList);
-            absentWeekAdp.notifyDataSetChanged();
+            ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
+            query.whereEqualTo("studentId", studentId);
+            query.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> objects, ParseException e) {
+                    if (e == null) {
+                        weekList.clear();
+                        for (ParseObject obj : objects) {
+                            for (int i = 1; i <= Integer.parseInt(currentWeek); i++) {
+                                String week = obj.getString("week" + i);
+                                if (!week.equals("present")) {
+                                    weekList.add(String.valueOf(i));
+                                    absentWeekAdp.notifyDataSetChanged();
+                                }
+                            }
+
+                        }
+                    } else {
+
+                    }
+                }
+            });
             recyclerView.setAdapter(absentWeekAdp);
+//            weekList.clear();
+//            Gson gson = new Gson();
+//            String jsonText = pref.getString("weeks", null);
+//            Type type = new TypeToken<ArrayList<String>>() {
+//            }.getType();
+//            weekList = gson.fromJson(jsonText, type);
+//            absentWeekAdp = new AbsentWeekAdp(getContext(), weekList);
+//            absentWeekAdp.notifyDataSetChanged();
+//            recyclerView.setAdapter(absentWeekAdp);
         }
     }
 

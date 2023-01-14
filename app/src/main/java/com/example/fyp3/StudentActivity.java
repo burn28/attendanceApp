@@ -153,13 +153,13 @@ public class StudentActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("PREFS", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("ISA15");
-        query.whereEqualTo("studentId", ParseUser.getCurrentUser().getUsername());
-        query.getFirstInBackground(new GetCallback<ParseObject>() {
+        ParseQuery<ParseUser> userParseQuery = ParseUser.getQuery();
+        userParseQuery.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+        userParseQuery.getFirstInBackground(new GetCallback<ParseUser>() {
             @Override
-            public void done(ParseObject object, ParseException e) {
+            public void done(ParseUser object, ParseException e) {
                 if(e == null){
-                    String id = object.getString("studentId");
+                    String id = object.getString("username");
                     String name = object.getString("fullname");
                     studentId.setText(id);
                     studentName.setText(name);
