@@ -95,7 +95,6 @@ public class LecturerAttendance extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         arrayAdapter = new ArrayAdapter<>(getContext(), R.layout.week_list, weeks);
         autoCompleteTextView.setAdapter(arrayAdapter);
         if (week.equals("Overall Percentage")) {
@@ -103,8 +102,8 @@ public class LecturerAttendance extends Fragment {
             showList2("percentage");
             radioGroup.setVisibility(View.GONE);
             radioGroup2.setVisibility(View.VISIBLE);
+            exportBtn.setVisibility(View.VISIBLE);
         }
-
     }
 
     @Override
@@ -177,7 +176,6 @@ public class LecturerAttendance extends Fragment {
         SecList = new ArrayList<>();
         ThirdList = new ArrayList<>();
 
-
         radioGroup = view.findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -244,8 +242,6 @@ public class LecturerAttendance extends Fragment {
                         return true;
                     }
                 });
-
-
             }
         });
         return view;

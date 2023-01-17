@@ -77,7 +77,7 @@ public class ExcelUtils {
         sheet.setColumnWidth(0, (15 * 400));
         sheet.setColumnWidth(1, (15 * 400));
         sheet.setColumnWidth(2, (15 * 400));
-        sheet.setColumnWidth(3, (15 * 400));
+//        sheet.setColumnWidth(3, (15 * 400));
 
         setHeaderRow(14);
         fillDataIntoExcel(dataList, 14);
@@ -231,8 +231,10 @@ public class ExcelUtils {
             List<String> keyList = new ArrayList<String>(weekMap.keySet());
             int diff = 14 - keyList.size();
             for (int j = 0; j < weekMap.size(); j++) {
+                Log.e("Y: ",String.valueOf(y));
+                int x = j+1;
                 String key = keyList.get(j);
-                String status = weekMap.get(key);
+                String status = weekMap.get("week"+x);
                 if (status.equals("present")) {
                     cell = rowData.createCell(y);
                     cell.setCellValue("P");
@@ -247,7 +249,6 @@ public class ExcelUtils {
                     cell.setCellStyle(absentStyle);
                 }
                 y++;
-
             }
             for (int j = 0; j < diff; j++) {
                 cell = rowData.createCell(y);
