@@ -150,8 +150,8 @@ public class StudentAttendance extends Fragment {
 
         SharedPreferences pref2 = getActivity().getSharedPreferences("DATA", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = pref2.edit();
-        editor.clear();
-        editor.apply();
+//        editor.clear();
+//        editor.apply();
 
         confirmBtn = view.findViewById(R.id.confirm_button);
         courses = new ArrayList<>();
@@ -167,8 +167,8 @@ public class StudentAttendance extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
-//        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
-        day = "Tuesday";
+        day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+//        day = "Thursday";
         time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 //        Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
 //        day = "Wednesday";
@@ -189,7 +189,6 @@ public class StudentAttendance extends Fragment {
             }
         });
         showList();
-
 //        popUpNotification();
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -227,6 +226,7 @@ public class StudentAttendance extends Fragment {
                                             mClass.setDay(day);
                                             mClass.setStartTime(obj.getString("startTime"));
                                             mClass.setEndTime(obj.getString("endTime"));
+                                            mClass.setLocation(obj.getString("location"));
 
                                             classList.add(mClass);
 //                                            Toast.makeText(getContext(), course, Toast.LENGTH_SHORT).show();
@@ -322,11 +322,13 @@ public class StudentAttendance extends Fragment {
             Toast.makeText(getContext(), "Class has not started yet!", Toast.LENGTH_SHORT).show();
             Log.e("NOTI", "start: " + startTime + " current:" + currentTime);
             Log.e("NOTI", "diff" + diffStart);
-        } else if (diffEnd > 0){
+        }
+        else if (diffEnd > 0) {
             Toast.makeText(getContext(), "Class was finished!", Toast.LENGTH_SHORT).show();
             Log.e("NOTI", "end: " + endTime + " current:" + currentTime);
             Log.e("NOTI", "diff" + diffEnd);
-        }else {
+        }
+        else {
             Gson gson = new Gson();
             StudentClass Class = new StudentClass();
             Class.setCourseId(courseId);
@@ -385,31 +387,31 @@ public class StudentAttendance extends Fragment {
             query.getFirstInBackground(new GetCallback<ParseObject>() {
                 @Override
                 public void done(ParseObject object, ParseException e) {
-                    if(action.equals("present")){
-                        object.put("week"+week, "present");
+                    if (action.equals("present")) {
+                        object.put("week" + week, "present");
                         object.saveInBackground();
-                    }else{
-                        if(reason!=null){
+                    } else {
+                        if (reason != null) {
                             ParseObject parseObject = new ParseObject("reason");
-                            parseObject.put("sentence",reason);
+                            parseObject.put("sentence", reason);
                             parseObject.saveInBackground(new SaveCallback() {
                                 @Override
                                 public void done(ParseException e) {
-                                    if(e==null){
+                                    if (e == null) {
                                         String objectId = parseObject.getObjectId();
-                                        object.put("week"+week, objectId);
+                                        object.put("week" + week, objectId);
                                         object.saveInBackground();
                                         Toast.makeText(getContext(), "Record save successfully.", Toast.LENGTH_SHORT).show();
-                                    }else {
+                                    } else {
                                         e.printStackTrace();
                                     }
 
                                 }
                             });
-                        } else if (fileByte.length != 0){
+                        } else if (fileByte.length != 0) {
                             String extension = FilenameUtils.getExtension(finalFile.getName());
                             Log.e("file", extension);
-                            ParseFile file = new ParseFile(ParseUser.getCurrentUser().getUsername()+"."+extension, fileByte);
+                            ParseFile file = new ParseFile(ParseUser.getCurrentUser().getUsername() + "." + extension, fileByte);
                             file.saveInBackground(new SaveCallback() {
                                 @Override
                                 public void done(ParseException e) {
@@ -421,7 +423,7 @@ public class StudentAttendance extends Fragment {
                                             public void done(ParseException e) {
                                                 if (e == null) {
                                                     String objectId = evidence.getObjectId();
-                                                    object.put("week"+week, objectId);
+                                                    object.put("week" + week, objectId);
                                                     object.saveInBackground();
                                                     Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
                                                     confirmBtn.setVisibility(GONE);
@@ -449,9 +451,14 @@ public class StudentAttendance extends Fragment {
         }
     }
 
-    public void askLocationPermission() {
+    public void askLocationPermission(String classLocation) {
         ActivityCompat.requestPermissions((Activity) getContext(), new String[]
                 {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            getLocation(classLocation);
+        }
+
     }
 
     public void turnOnGPS() {
@@ -488,7 +495,8 @@ public class StudentAttendance extends Fragment {
         });
     }
 
-    public void getLocation() {
+    public void getLocation(String Location) {
+
         LatLng upperLeft1 = new LatLng(2.8525253649524265, 101.76843307238708);
         LatLng upperRight1 = new LatLng(2.8525188709429625, 101.76858181060345);
         LatLng lowerLeft1 = new LatLng(2.851545195760625, 101.7684395629876);
@@ -509,6 +517,15 @@ public class StudentAttendance extends Fragment {
         polygonPts2.add(lowerRight2);
         polygonPts2.add(lowerLeft2);
 
+        LatLng upperLeft3 = new LatLng(2.841886354725435, 101.77934442720063);
+        LatLng upperRight3 = new LatLng(2.8416559684191376, 101.77990500888474);
+        LatLng lowerLeft3 = new LatLng(2.8409380200999306, 101.77895818910245);
+        LatLng lowerRight3 = new LatLng(2.8406969179522834, 101.77949731311448);
+        List<LatLng> polygonPtsFEM = new ArrayList<>();
+        polygonPtsFEM.add(upperLeft3);
+        polygonPtsFEM.add(upperRight3);
+        polygonPtsFEM.add(lowerRight3);
+        polygonPtsFEM.add(lowerLeft3);
 
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -516,8 +533,8 @@ public class StudentAttendance extends Fragment {
 
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 Toast.makeText(getContext(), "Please turn On GPS", Toast.LENGTH_SHORT).show();
-            }
-            fusedLocationProviderClient.getLastLocation()
+            } else {
+                fusedLocationProviderClient.getLastLocation()
                     .addOnSuccessListener(new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
@@ -526,10 +543,14 @@ public class StudentAttendance extends Fragment {
                                 List<Address> addresses = null;
                                 try {
                                     addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-//                                    double latitude = addresses.get(0).getLatitude();
-//                                    double longitude = addresses.get(0).getLongitude();
-                                    double latitude = 2.8518691171806414;
-                                    double longitude = 101.7680472556706;
+                                    double latitude = addresses.get(0).getLatitude();
+                                    double longitude = addresses.get(0).getLongitude();
+
+//                                    double latitude = 2.8518691171806414;
+//                                    double longitude = 101.7680472556706;
+                                    //FEM test
+//                                    double latitude = 2.841388077307472;
+//                                    double longitude = 101.77924786767608;
                                     Log.e("GPS", "latitude: " + addresses.get(0).getLatitude());
                                     Log.e("GPS", "longitude: " + addresses.get(0).getLongitude());
                                     Log.e("GPS", "address: " + addresses.get(0).getAddressLine(0));
@@ -538,14 +559,26 @@ public class StudentAttendance extends Fragment {
 //                                    Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
                                     boolean isWithin1 = PolyUtil.containsLocation(latitude, longitude, polygonPts, true);
                                     boolean isWithin2 = PolyUtil.containsLocation(latitude, longitude, polygonPts2, true);
+                                    boolean isWithin3 = PolyUtil.containsLocation(latitude, longitude, polygonPtsFEM, true);
 
-                                    if (isWithin1 || isWithin2) {
-                                        Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
-                                        Toast.makeText(getContext(), "Within the area", Toast.LENGTH_SHORT).show();
-                                        byte[] bytes = new byte[0];
-                                        recordAttendance(bytes);
-                                    } else {
-                                        Toast.makeText(getContext(), "Not within", Toast.LENGTH_SHORT).show();
+                                    if(Location.toUpperCase().contains("FST")){
+                                        if (isWithin1 || isWithin2) {
+//                                        Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Within the area", Toast.LENGTH_SHORT).show();
+                                            byte[] bytes = new byte[0];
+                                            recordAttendance(bytes);
+                                        } else {
+                                            Toast.makeText(getContext(), "Not within the area", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }else if(Location.toUpperCase().contains("FEM")){
+                                        if (isWithin3) {
+//                                        Toast.makeText(getContext(), addresses.get(0).getAddressLine(0), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getContext(), "Within the area", Toast.LENGTH_SHORT).show();
+                                            byte[] bytes = new byte[0];
+                                            recordAttendance(bytes);
+                                        } else {
+                                            Toast.makeText(getContext(), "Not within the area", Toast.LENGTH_SHORT).show();
+                                        }
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -554,12 +587,13 @@ public class StudentAttendance extends Fragment {
 
                             } else {
 //                                Toast.makeText(getContext(), "getLocation: NULL", Toast.LENGTH_SHORT).show();
-                                getLocation();
+                                getLocation(Location);
                             }
                         }
                     });
+            }
         } else {
-            askLocationPermission();
+            askLocationPermission(Location);
         }
 
     }

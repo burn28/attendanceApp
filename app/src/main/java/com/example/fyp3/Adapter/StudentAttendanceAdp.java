@@ -57,7 +57,7 @@ public class StudentAttendanceAdp extends RecyclerView.Adapter<StudentAttendance
                 editor.apply();
                 byte[] data = null;
                 fragment.loadingDialog.startLoadingDialog(fragment.getLayoutInflater());
-                fragment.getLocation();
+                fragment.getLocation(mClass.getLocation());
 //                fragment.recordAttendance(data);
             }
         });

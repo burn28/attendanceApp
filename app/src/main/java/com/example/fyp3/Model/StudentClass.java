@@ -13,21 +13,31 @@ public class StudentClass {
     private String startTime;
     private String endTime;
     private String day;
+    private String location;
     private List<String> weeks = new ArrayList<>();
     private Integer totalWeek = 0;
     private Integer percentage = 100;
     private HashMap<String,String> status = new HashMap<>();
 
-    public StudentClass(String courseId, String title, Integer totalWeek, Integer percentage, String day) {
+    public StudentClass(String courseId, String title, Integer totalWeek, Integer percentage, String day, String location) {
         this.courseId = courseId;
         this.title = title;
         this.totalWeek = totalWeek;
         this.day = day;
         this.percentage = percentage;
+        this.location = location;
     }
 
     public StudentClass() {
 
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getStatus(String key) {

@@ -73,7 +73,7 @@ public class LecturerActivity extends AppCompatActivity {
 
         if(requestCode == STORAGE_PERMISSION_CODE){
             if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(this, "Storage Permission Granted", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, "Storage Permission Granted", Toast.LENGTH_SHORT).show();
             }else {
                 Toast.makeText(this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
             }

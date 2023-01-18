@@ -267,7 +267,7 @@ public class Evidence extends Fragment {
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(data);
             fos.close();
-            Toast.makeText(getContext(), "File saved successfully", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Successfully save the file in Downloads/Student Attendance/", Toast.LENGTH_SHORT).show();
             Log.e("FILE", "COMPLETE");
         } catch (Exception e) {
             e.printStackTrace();

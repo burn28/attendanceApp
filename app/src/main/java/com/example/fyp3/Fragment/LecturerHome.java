@@ -19,11 +19,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.fyp3.Adapter.LecturerClassAdp;
-import com.example.fyp3.LecturerActivity;
 import com.example.fyp3.MainActivity;
 import com.example.fyp3.Model.LecturerClass;
 import com.example.fyp3.R;
-import com.example.fyp3.StudentActivity;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -76,7 +74,7 @@ public class LecturerHome extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if(!classList.isEmpty()){
-                    filterList(newText);
+                    searchList(newText);
                 }
                 return true;
             }
@@ -96,7 +94,7 @@ public class LecturerHome extends Fragment {
         return view;
     }
 
-    private void filterList(String s) {
+    private void searchList(String s) {
         List<LecturerClass> filteredList = new ArrayList<>();
         for(LecturerClass Class : classList){
             if(Class.getCourseId().toLowerCase().contains(s.toLowerCase()) ||

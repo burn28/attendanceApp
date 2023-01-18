@@ -147,14 +147,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="30dp"
-                android:text="99% - 86%" />
+                android:text="99% - 80%" />
 
             <RadioButton
                 android:id="@+id/opt0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="30dp"
-                android:text="85% - 0%" />
+                android:text="79% - 0%" />
 
         </RadioGroup>
     </RelativeLayout>

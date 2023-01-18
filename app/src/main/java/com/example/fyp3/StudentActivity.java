@@ -130,19 +130,19 @@ public class StudentActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        StudentAttendance studentAttendanceFrag = new StudentAttendance();
-        if(requestCode == studentAttendanceFrag.LOCATION_REQUEST_CODE){
-            if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                studentAttendanceFrag.getLocation();
-                Toast.makeText(studentAttendanceFrag.getContext(), "Location Permitted", Toast.LENGTH_SHORT).show();
-            }else{
-                Toast.makeText(studentAttendanceFrag.getContext(), "Required Location Permission", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        StudentAttendance studentAttendanceFrag = new StudentAttendance();
+//        if(requestCode == studentAttendanceFrag.LOCATION_REQUEST_CODE){
+//            if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+//                studentAttendanceFrag.getLocation();
+//                Toast.makeText(studentAttendanceFrag.getContext(), "Location Permitted", Toast.LENGTH_SHORT).show();
+//            }else{
+//                Toast.makeText(studentAttendanceFrag.getContext(), "Required Location Permission", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
 
 
     public void getStudent(){
@@ -166,6 +166,7 @@ public class StudentActivity extends AppCompatActivity {
                     editor.putString("studentId",id);
                     editor.putString("studentName",name);
                     editor.apply();
+
                 }
             }
         });

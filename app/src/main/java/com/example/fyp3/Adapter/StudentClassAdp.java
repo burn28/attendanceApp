@@ -2,7 +2,9 @@ package com.example.fyp3.Adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +28,13 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHolder>{
+public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHolder> {
 
     public Context mContext;
     public List<StudentClass> mCourseList;
     public List<String> colorList;
 
-    public StudentClassAdp(Context mContext, List<StudentClass> mCourseList){
+    public StudentClassAdp(Context mContext, List<StudentClass> mCourseList) {
         this.mContext = mContext;
         this.mCourseList = mCourseList;
         colorList = new ArrayList<>();
@@ -46,7 +48,7 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
         colorList.add("#FDCD55");
     }
 
-    public void setFilteredList(List<StudentClass> filteredList){
+    public void setFilteredList(List<StudentClass> filteredList) {
         this.mCourseList = filteredList;
         notifyDataSetChanged();
     }
@@ -54,24 +56,34 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
     @NonNull
     @Override
     public StudentClassAdp.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.student_course_item,parent,false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.student_course_item, parent, false);
         return new StudentClassAdp.ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull StudentClassAdp.ViewHolder holder, int position) {
         StudentClass Class = mCourseList.get(position);
-        holder.title.setText(Class.getCourseId()+" "+Class.getTitle());
+        holder.title.setText(Class.getCourseId() + " " + Class.getTitle());
         holder.percent.setText(Class.getPercentage() + "%");
         holder.progressBar.setProgress(Class.getPercentage());
         holder.cardView.setCardBackgroundColor(Color.parseColor(colorList.get(position)));
 //        holder.cardView.startAnimation(AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.anim_fall_down));
+
+        if (Class.getPercentage() < 80) {
+//            holder.progressBar.setProgressDrawable(mContext.getDrawable(R.drawable.red_progress_bar));
+            holder.progressBar.getProgressDrawable().setColorFilter(Color.parseColor("#F35555"), android.graphics.PorterDuff.Mode.SRC_IN);
+
+            Log.e("BAR:", "red");
+        } else {
+            holder.progressBar.getProgressDrawable().setColorFilter(Color.parseColor("#FFFFFF"), android.graphics.PorterDuff.Mode.SRC_IN);
+            Log.e("BAR:", String.valueOf(Class.getPercentage()));
+        }
         holder.linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
-                editor.putString("courseId",Class.getCourseId());
-                editor.putString("title",Class.getCourseId()+" "+Class.getTitle());
+                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+                editor.putString("courseId", Class.getCourseId());
+                editor.putString("title", Class.getCourseId() + " " + Class.getTitle());
                 editor.putInt("percentage", Class.getPercentage());
 
                 Gson gson = new Gson();
@@ -80,13 +92,12 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
                 editor.putString("weeks", jsonText);
                 editor.apply();
 
-                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                ((FragmentActivity) mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                                 new AbsentDetails())
                         .addToBackStack("details")
                         .commit();
             }
         });
-
     }
 
     @Override
@@ -94,9 +105,9 @@ public class StudentClassAdp extends RecyclerView.Adapter<StudentClassAdp.ViewHo
         return mCourseList.size();
     }
 
-    public  class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView title,percent;
+        public TextView title, percent;
         public LinearLayout linearLayout;
         public ProgressBar progressBar;
         public CardView cardView;

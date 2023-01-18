@@ -19,7 +19,7 @@ public class LoadingDialog {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setView(inflater.inflate(R.layout.custom_loading,null));
-        builder.setCancelable(false);
+        builder.setCancelable(true);
 
         dialog = builder.create();
         dialog.show();

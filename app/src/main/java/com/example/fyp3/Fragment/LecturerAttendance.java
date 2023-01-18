@@ -1,14 +1,11 @@
 package com.example.fyp3.Fragment;
 
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,8 +15,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
@@ -27,7 +22,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.fyp3.Adapter.LecturerAttendanceAdp;
 import com.example.fyp3.Adapter.LecturerAttendanceAdpNew;
 import com.example.fyp3.Adapter.PercentageAdp;
 import com.example.fyp3.ExcelUtils;
@@ -39,14 +33,12 @@ import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class LecturerAttendance extends Fragment {
 
@@ -98,7 +90,7 @@ public class LecturerAttendance extends Fragment {
         arrayAdapter = new ArrayAdapter<>(getContext(), R.layout.week_list, weeks);
         autoCompleteTextView.setAdapter(arrayAdapter);
         if (week.equals("Overall Percentage")) {
-            week = "Overall Percentage";
+//            week = "Overall Percentage";
             showList2("percentage");
             radioGroup.setVisibility(View.GONE);
             radioGroup2.setVisibility(View.VISIBLE);
@@ -219,7 +211,7 @@ public class LecturerAttendance extends Fragment {
             public void onClick(View view) {
 
                 SimpleDateFormat sdf = new SimpleDateFormat("'_'yy.MM.dd'_'HH.mm");
-                String fileName = "Attendance_"+courseId+sdf.format(new Date());
+                String fileName = "Attendance_" + courseId + sdf.format(new Date());
                 PopupMenu popupMenu = new PopupMenu(getContext(), view);
                 popupMenu.inflate(R.menu.export_menu);
                 popupMenu.show();
@@ -231,9 +223,9 @@ public class LecturerAttendance extends Fragment {
                             try {
                                 boolean isSuccess = ExcelUtils.exportDataIntoWorkbook(getContext(), fileName, percentList2, crntWeek);
                                 if (isSuccess) {
-                                    Toast.makeText(getContext(), "Export Success", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Successfully Export to Downloads/Student Attendance/", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(getContext(), "Export FAILEDDD", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Export Failed!", Toast.LENGTH_SHORT).show();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -289,10 +281,14 @@ public class LecturerAttendance extends Fragment {
                                 query.getFirstInBackground(new GetCallback<ParseObject>() {
                                     @Override
                                     public void done(ParseObject objects, ParseException e) {
-                                        if (objects.getString("fullname") != null) {
-                                            lClass.setStudentName(objects.getString("fullname"));
+
+                                        if (e == null) {
+                                            if (objects.getString("fullname") != null) {
+                                                lClass.setStudentName(objects.getString("fullname"));
+                                            }
+//                                            attendanceList2.add(lClass);
+                                            attendanceAdp2.notifyDataSetChanged();
                                         }
-                                        attendanceAdp2.notifyDataSetChanged();
                                     }
                                 });
                                 if (lClass.getStatus("week" + week).equals("present")) {
@@ -332,6 +328,7 @@ public class LecturerAttendance extends Fragment {
 
             } else if (week.equals("Overall Percentage")) {
 //            Toast.makeText(getContext(), "RUNNING", Toast.LENGTH_SHORT).show();
+                HashMap<String, String> userMap = new HashMap<>();
                 ParseQuery<ParseObject> query = ParseQuery.getQuery(courseId);
                 query.orderByAscending("studentId");
                 query.findInBackground(new FindCallback<ParseObject>() {
@@ -350,8 +347,7 @@ public class LecturerAttendance extends Fragment {
                                         lClass.setTotalWeek(lClass.getTotalWeek() + 1);
                                         lClass.setWeeks(String.valueOf(j));
                                     }
-                                    ParseQuery<ParseUser> userParseQuery = ParseUser.getQuery();
-                                    userParseQuery.whereEqualTo("username", lClass.getStudentId());
+
 //                                    userParseQuery.getFirstInBackground(new GetCallback<ParseUser>() {
 //                                        @Override
 //                                        public void done(ParseUser object, ParseException e) {
@@ -384,24 +380,26 @@ public class LecturerAttendance extends Fragment {
                                 query.getFirstInBackground(new GetCallback<ParseObject>() {
                                     @Override
                                     public void done(ParseObject object, ParseException e) {
-
-                                        if (object.getString("fullname") != null) {
-                                            lClass.setStudentName(object.getString("fullname"));
+                                        if (e == null) {
+                                            if (object.getString("fullname") != null) {
+                                                lClass.setStudentName(object.getString("fullname"));
+                                            }
+                                            percentageAdp.notifyDataSetChanged();
+                                        }else {
+                                            e.printStackTrace();
                                         }
-                                        percentageAdp.notifyDataSetChanged();
                                     }
                                 });
                                 percentList2.add(lClass);
                                 percentageAdp.notifyDataSetChanged();
                             }
-
                             for (AttendanceClassNew obj : percentList2) {
                                 double percentage = (14d - obj.getTotalWeek()) * 100 / 14;
                                 int result = (int) Math.ceil(percentage);
                                 obj.setPercentage(result);
                             }
-                            AttendanceClassNew std = percentList2.get(1);
-                            Toast.makeText(getContext(), std.getTotalWeek().toString(), Toast.LENGTH_SHORT).show();
+//                            AttendanceClassNew std = percentList2.get(1);
+//                            Toast.makeText(getContext(), std.getTotalWeek().toString(), Toast.LENGTH_SHORT).show();
                             percentOpt2("firstOpt");
                         } else if (objects.isEmpty()) {
                             Log.d("PERCENTAGE", "Error: Empty");
@@ -445,7 +443,7 @@ public class LecturerAttendance extends Fragment {
         for (AttendanceClassNew obj : percentList2) {
             if (obj.getPercentage() == 100) {
                 FirstList2.add(obj);
-            } else if (obj.getPercentage() < 100 && obj.getPercentage() > 85) {
+            } else if (obj.getPercentage() < 100 && obj.getPercentage() > 79) {
                 SecList2.add(obj);
             } else {
                 ThirdList2.add(obj);
